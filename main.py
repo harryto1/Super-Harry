@@ -1,3 +1,4 @@
+import pygame
 import sys
 from menus.game_menu import Menu
 from constants.constants import *
@@ -7,8 +8,10 @@ class Player:
     def __init__(self):
         self.x = 100
         self.y = HEIGHT // 2 + 200
-        self.width = 200
-        self.height = 200
+        self.width = 35  # Rect width
+        self.height = 40  # Rect height
+        self.sprite_width = 200  # Sprite width
+        self.sprite_height = 200  # Sprite height
         self.color = (255, 0, 0)
         self.health = 100
         self.speed = 5
@@ -38,10 +41,11 @@ class Player:
         if now - self.last_update > self.frame_rate:
             self.last_update = now
             self.idle_frame = (self.idle_frame + 1) % len(self.idle_sprites)
-        sprite = pygame.transform.scale(self.idle_sprites[self.idle_frame], (self.width, self.height))
+        sprite = pygame.transform.scale(self.idle_sprites[self.idle_frame], (self.sprite_width, self.sprite_height))
         if self.facing_left:
             sprite = pygame.transform.flip(sprite, True, False)
-        screen.blit(sprite, (self.x, self.y))
+        screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2, self.y - (self.sprite_height - self.height) + self.height + 45))
+        self.draw_hitbox()
 
     def draw_walk_animation(self):
         if not self.walk_sprites:
@@ -50,10 +54,11 @@ class Player:
         if now - self.last_update > self.frame_rate:
             self.last_update = now
             self.walk_frame = (self.walk_frame + 1) % len(self.walk_sprites)
-        sprite = pygame.transform.scale(self.walk_sprites[self.walk_frame], (self.width, self.height))
+        sprite = pygame.transform.scale(self.walk_sprites[self.walk_frame], (self.sprite_width, self.sprite_height))
         if self.facing_left:
             sprite = pygame.transform.flip(sprite, True, False)
-        screen.blit(sprite, (self.x, self.y))
+        screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2, self.y - (self.sprite_height - self.height) + self.height + 45))
+        self.draw_hitbox()
 
     def update_position(self, keys):
         self.moving = False
@@ -79,6 +84,9 @@ class Player:
                 self.jumping = False
                 self.jump_velocity = 0
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def draw_hitbox(self):
+        pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)
 
 pygame.init()
 Clock = pygame.time.Clock()
