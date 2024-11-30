@@ -17,6 +17,9 @@ class Level_1:
                 pygame.Rect(700, HEIGHT // 2 + 150, 50, 50)
 
             ]
+            self.moving_blocks = [
+                [pygame.Rect(800, HEIGHT // 2 + 100, 50, 50), 'right'],
+            ]
             self.spikes = [
                 pygame.Rect(200, HEIGHT // 2 + 190, 50, 50),
             ]
@@ -36,6 +39,20 @@ class Level_1:
             for spike in self.spikes:
                 pygame.draw.rect(screen, (255, 0, 0), spike, 2)
                 screen.blit(self.spikes_sprites[0], (spike.x, spike.y))
+            for moving_block in self.moving_blocks:
+                pygame.draw.rect(screen, (0, 0, 255), moving_block[0])
+                if moving_block[1] == 'right':
+                    moving_block[0].x += 3 # Move the block to the right
+                if moving_block[1] == 'left':
+                    moving_block[0].x -= 3 # Move the block to the left
+                if moving_block[0].x > 1100:
+                    moving_block[1] = 'left'
+                if moving_block[0].x < 800:
+                    moving_block[1] = 'right'
+
+
+
+
 
         def draw_special_spike(self, n):
             pygame.draw.rect(screen, (255, 0, 0), self.special_spikes[n], 2)

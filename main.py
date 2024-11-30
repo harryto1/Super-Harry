@@ -1,10 +1,11 @@
-
+import time
+initial_time = time.time()
 import sys
 from menus.game_menu import Menu
 from constants.constants import *
 from menus.pause_menu import PauseMenu
 from worlds import level_1
-print('Imported all modules')
+print(f'Imported all modules in {time.time() - initial_time} seconds')
 
 class Player:
     def __init__(self):
@@ -15,7 +16,7 @@ class Player:
         self.sprite_width = 200  # Sprite width
         self.sprite_height = 200  # Sprite height
         self.color = (255, 0, 0)
-        self.health = 3
+        self.health = 5
         self.speed = 5
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.moving = False
@@ -37,6 +38,7 @@ class Player:
         self.walk_frame = 0
         self.last_update = pygame.time.get_ticks()
         self.frame_rate = 100  # milliseconds per frame
+        self.heart = pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png')
 
     def draw_idle(self):
         now = pygame.time.get_ticks()
@@ -92,7 +94,7 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def check_if_on_block(self):
-        blocks = current_world.blocks
+        blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
         on_block = False
 
         if not self.jumping:  # Only check if the player is not jumping
@@ -110,8 +112,9 @@ class Player:
             if not on_block:
                 self.jumping = True  # Player starts falling if not above a block
 
+
     def gravity(self):
-        blocks = current_world.blocks
+        blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
 
         if self.jumping:  # Apply gravity if jumping or falling
             self.y += self.jump_velocity
@@ -155,6 +158,13 @@ class Player:
     def draw_hitbox(self):
         pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)
 
+    def draw_hearts(self):
+        hearts_rects = [
+            pygame.Rect(10 + i * 40, 10, 30, 30) for i in range(self.health)
+        ]
+        for heart_rect in hearts_rects:
+            screen.blit(pygame.transform.scale(self.heart, (30, 30)), heart_rect)
+
     def events(self):
         if player.rect.x < 0:
             player.rect.x = 0
@@ -166,9 +176,9 @@ class Player:
             current_world.special_spikes.pop()
             current_world.special_spikes.append(pygame.Rect(0, HEIGHT // 2 + 190, 50, 50))
 
-print('Created player object')
+print(f'Created player object in {time.time() - initial_time} seconds')
 pygame.init()
-print('Initialized pygame')
+print(f'Initialized pygame in {time.time() - initial_time} seconds')
 Clock = pygame.time.Clock()
 screen = pygame.display.set_mode()
 pygame.display.set_caption("Game Menu")
@@ -192,6 +202,7 @@ elif selected == 0:
         player.check_if_on_block()
         player.check_dead()
         current_world.draw()
+        player.draw_hearts()
         player.events()
         if player.moving:
             player.draw_walk_animation()
