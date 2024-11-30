@@ -1,5 +1,6 @@
-import pygame
+
 from constants.constants import *
+
 
 
 class Level_1:
@@ -13,8 +14,14 @@ class Level_1:
             self.blocks = [
                 pygame.Rect(0, HEIGHT // 2 + 240, 500, 500),
                 pygame.Rect(575, HEIGHT // 2 + 200, 50, 50),
+                pygame.Rect(700, HEIGHT // 2 + 150, 50, 50)
+
             ]
             self.spikes = [
+                pygame.Rect(200, HEIGHT // 2 + 190, 50, 50),
+            ]
+            self.special_spikes = [
+                pygame.Rect(300, HEIGHT // 2 + 190, 50, 50),
                 pygame.Rect(575, HEIGHT // 2 + 150, 50, 50),
             ]
             self.spikes_spritesheet = pygame.image.load('assets/worlds/enemies/16-bit-spike-Sheet.png')
@@ -29,5 +36,10 @@ class Level_1:
             for spike in self.spikes:
                 pygame.draw.rect(screen, (255, 0, 0), spike, 2)
                 screen.blit(self.spikes_sprites[0], (spike.x, spike.y))
+
+        def draw_special_spike(self, n):
+            pygame.draw.rect(screen, (255, 0, 0), self.special_spikes[n], 2)
+            screen.blit(self.spikes_sprites[0], (self.special_spikes[n].x, self.special_spikes[n].y))
+
 
 

@@ -1,9 +1,10 @@
-import pygame
+
 import sys
 from menus.game_menu import Menu
 from constants.constants import *
 from menus.pause_menu import PauseMenu
 from worlds import level_1
+print('Imported all modules')
 
 class Player:
     def __init__(self):
@@ -145,11 +146,29 @@ class Player:
                 self.health -= 1
                 self.x = 50
                 self.y = HEIGHT // 2 + 200
+        for spike in current_world.special_spikes:
+            if self.rect.colliderect(spike):
+                self.health -= 1
+                self.x = 50
+                self.y = HEIGHT // 2 + 200
 
     def draw_hitbox(self):
         pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)
 
+    def events(self):
+        if player.rect.x < 0:
+            player.rect.x = 0
+        if player.rect.x > 250:
+            current_world.draw_special_spike(0)
+        if player.rect.x < 450:
+            current_world.draw_special_spike(1)
+        if player.rect.x > 500:
+            current_world.special_spikes.pop()
+            current_world.special_spikes.append(pygame.Rect(0, HEIGHT // 2 + 190, 50, 50))
+
+print('Created player object')
 pygame.init()
+print('Initialized pygame')
 Clock = pygame.time.Clock()
 screen = pygame.display.set_mode()
 pygame.display.set_caption("Game Menu")
@@ -173,6 +192,7 @@ elif selected == 0:
         player.check_if_on_block()
         player.check_dead()
         current_world.draw()
+        player.events()
         if player.moving:
             player.draw_walk_animation()
         else:
