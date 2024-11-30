@@ -3,6 +3,7 @@ import sys
 from menus.game_menu import Menu
 from constants.constants import *
 from menus.pause_menu import PauseMenu
+from worlds import level_1
 
 class Player:
     def __init__(self):
@@ -13,7 +14,7 @@ class Player:
         self.sprite_width = 200  # Sprite width
         self.sprite_height = 200  # Sprite height
         self.color = (255, 0, 0)
-        self.health = 100
+        self.health = 3
         self.speed = 5
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.moving = False
@@ -73,17 +74,77 @@ class Player:
         if keys[pygame.K_SPACE] and not self.jumping:
             self.jump_velocity = -15  # Initial jump velocity
             self.jumping = True
+
+        # Update the player's rectangle position
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-    def gravity(self):
-        if self.jumping:
-            self.y += self.jump_velocity
-            self.jump_velocity += self.gravity_force
-            if self.y >= HEIGHT // 2 + 200:
-                self.y = HEIGHT // 2 + 200
-                self.jumping = False
-                self.jump_velocity = 0
+        # Check for horizontal collisions
+        for block in current_world.blocks:
+            if self.rect.colliderect(block):
+                if self.rect.right > block.left and self.rect.left < block.right:
+                    if self.facing_left:
+                        self.x = block.right
+                    else:
+                        self.x = block.left - self.width
+
+        # Update the player's rectangle position again after collision adjustment
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def check_if_on_block(self):
+        blocks = current_world.blocks
+        on_block = False
+
+        if not self.jumping:  # Only check if the player is not jumping
+            for block in blocks:
+                # Check if the player is directly above a block
+                if (
+                        self.rect.bottom <= block.top + self.speed  # Near or touching the block's top
+                        and self.rect.right > block.left  # Horizontally overlapping
+                        and self.rect.left < block.right  # Horizontally overlapping
+                ):
+                    self.y = block.top - self.height  # Align player to the top of the block
+                    on_block = True
+                    break
+
+            if not on_block:
+                self.jumping = True  # Player starts falling if not above a block
+
+    def gravity(self):
+        blocks = current_world.blocks
+
+        if self.jumping:  # Apply gravity if jumping or falling
+            self.y += self.jump_velocity
+            self.jump_velocity += self.gravity_force  # Increase downward velocity
+            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+            # Check for landing on a block
+            for block in blocks:
+                if (
+                        self.rect.colliderect(block)
+                        and self.rect.bottom >= block.top  # Ensure player is actually landing
+                        and self.rect.bottom <= block.top + self.jump_velocity + 1  # Account for overshoot
+                        and self.rect.right > block.left  # Horizontally overlapping
+                        and self.rect.left < block.right  # Horizontally overlapping
+                ):
+                    self.y = block.top - self.height  # Align with block's top
+                    self.jumping = False  # Stop falling
+                    self.jump_velocity = 0  # Reset vertical velocity
+                    break
+        else:
+            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+        # Check if player falls below the world or not on any block
+
+    def check_dead(self):
+        if self.y > HEIGHT:
+            self.health -= 1
+            self.x = 50
+            self.y = HEIGHT // 2 + 200
+        for spike in current_world.spikes:
+            if self.rect.colliderect(spike):
+                self.health -= 1
+                self.x = 50
+                self.y = HEIGHT // 2 + 200
 
     def draw_hitbox(self):
         pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)
@@ -101,12 +162,17 @@ elif selected == 0:
     print('Starting game...')
     screen.fill(BLACK)
     player = Player()
+    current_level = level_1.Level_1()
+    current_world = level_1.Level_1.World_1()
     running = True
     while running:
         screen.fill(BLACK)
         keys = pygame.key.get_pressed()
         player.update_position(keys)
         player.gravity()
+        player.check_if_on_block()
+        player.check_dead()
+        current_world.draw()
         if player.moving:
             player.draw_walk_animation()
         else:
