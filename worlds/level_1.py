@@ -77,10 +77,15 @@ class Level1:
     class World2:
         def __init__(self):
             self.blocks = [
-                [pygame.Rect(x, HEIGHT // 2 + y, 300, 200) for x in range(0, 300, 50) for y in range(260, HEIGHT, 50)]
+                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 300, 50) for y in range(260, HEIGHT, 50)]
             ]
         def draw(self):
             for block in self.blocks:
-                pygame.draw.rect(screen, (0, 255, 0), block)
-                screen.blit(Level1.block_sprites[0], (block.x, block.y))
+                if isinstance(block, list):
+                    for b in block:
+                        pygame.draw.rect(screen, (0, 255, 0), b)
+                        screen.blit(Level1.block_sprites[0], (b.x, b.y))
+                else:
+                    pygame.draw.rect(screen, (0, 255, 0), block)
+                    screen.blit(Level1.block_sprites[0], (block.x, block.y))
 

@@ -226,12 +226,13 @@ class Player:
                 if isinstance(block, list):
                     for b in block:
                         if b.x == 0:
-                            self.y = b.y - self.height
+                            self.y = b.y - self.height + 10
                 else:
                     if block.x == 0:
-                        self.y = block.y - self.height
+                        self.y = block.y - self.height + 10
             self.jumping = False
             self.jump_velocity = 0
+            self.health += 1
 
     def check_0_health(self):
         global level, current_level, current_world, world
