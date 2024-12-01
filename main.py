@@ -352,6 +352,8 @@ pygame.display.set_caption("Game Menu")
 menu_items = ['Start', 'Quit']
 menu = Menu(GRAY, menu_items)
 selected = menu.run()
+a_or_d = False # Check if the player pressed A or D
+space_instructions_done = False # Check if the player pressed SPACE
 world = 0
 level = 0
 if selected == 1:
@@ -366,6 +368,12 @@ elif selected == 0:
     running = True
     while running:
         screen.fill(BLACK)
+        if level == 0 and not a_or_d:
+            if level1.start_instructions(player):
+                a_or_d = True
+        if level == 0 and not space_instructions_done and a_or_d:
+            if level1.space_instructions(player):
+                space_instructions_done = True
         player.check_for_new_world()
         player.check_0_health()
         keys = pygame.key.get_pressed()
