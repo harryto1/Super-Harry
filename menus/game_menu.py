@@ -7,8 +7,8 @@ class Menu:
     def __init__(self, font_color, menu_items):
         self.screen = screen
         self.bg_color = bg_color
-        self.title_font = pygame.font.Font(None, 72)
-        self.font = pygame.font.Font(None, 36)
+        self.title_font = pygame.font.Font('assets/font/Monocraft.ttf', 96)
+        self.font = pygame.font.Font('assets/font/Monocraft.ttf', 36)
         self.font_color = font_color
         self.menu_items = menu_items
         self.selected_item = 0
@@ -25,7 +25,8 @@ class Menu:
                 label = self.font.render(item, 1, (255, 255, 255))
             else:
                 label = self.font.render(item, 1, self.font_color)
-            self.screen.blit(label, (WIDTH // 2, HEIGHT // 2 - 50 + i * 50))
+            label_rect = label.get_rect(center=(WIDTH // 2, HEIGHT // 2 + i * 75))
+            self.screen.blit(label, label_rect)
         pygame.display.flip()
 
     def run(self):

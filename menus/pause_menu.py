@@ -19,7 +19,8 @@ class PauseMenu:
                 label = self.font.render(item, 1, (255, 255, 255))
             else:
                 label = self.font.render(item, 1, self.font_color)
-            self.screen.blit(label, (WIDTH // 2, HEIGHT // 2 - 50 + i * 50))
+            label_rect = label.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50 + i * 50))
+            self.screen.blit(label, label_rect)
         pygame.display.flip()
 
     def run(self):
