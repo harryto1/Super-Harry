@@ -5,6 +5,9 @@ from menus.game_menu import Menu
 from constants.constants import *
 from menus.pause_menu import PauseMenu
 from worlds import level_1
+from worlds.events import level1
+
+
 print(f'Imported all modules in {time.time() - initial_time} seconds')
 
 class Player:
@@ -83,38 +86,65 @@ class Player:
 
         # Check for horizontal collisions
         for block in current_world.blocks:
-            if self.rect.colliderect(block):
-                if self.rect.right > block.left and self.rect.left < block.right:
-                    if self.facing_left:
-                        self.x = block.right
-                    else:
-                        self.x = block.left - self.width
+            if isinstance(block, list):
+                for b in block:
+                    if self.rect.colliderect(b):
+                        if self.rect.bottom > b.top and self.rect.top < b.bottom:
+                            if self.facing_left:
+                                self.x = b.right
+                            else:
+                                self.x = b.left - self.width
+            else:
+                if self.rect.colliderect(block):
+                    if self.rect.right > block.left and self.rect.left < block.right:
+                        if self.facing_left:
+                            self.x = block.right
+                        else:
+                            self.x = block.left - self.width
+        if player.x < 0:
+            player.x = 0
 
         # Update the player's rectangle position again after collision adjustment
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def check_if_on_block(self):
-        blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
+        if hasattr(current_world, 'moving_blocks'):
+            blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
+        else:
+            blocks = current_world.blocks
         on_block = False
 
         if not self.jumping:  # Only check if the player is not jumping
             for block in blocks:
-                # Check if the player is directly above a block
-                if (
-                        self.rect.bottom <= block.top + self.speed  # Near or touching the block's top
-                        and self.rect.right > block.left  # Horizontally overlapping
-                        and self.rect.left < block.right  # Horizontally overlapping
-                ):
-                    self.y = block.top - self.height  # Align player to the top of the block
-                    on_block = True
-                    break
+                if isinstance(block, list):
+                    for b in block:
+                        if (
+                                self.rect.bottom <= b.top + self.speed  # Near or touching the block's top
+                                and self.rect.right > b.left  # Horizontally overlapping
+                                and self.rect.left < b.right  # Horizontally overlapping
+                        ):
+                            on_block = True
+                            break
+                else:
+                    # Check if the player is directly above a block
+                    if (
+                            self.rect.bottom <= block.top + self.speed  # Near or touching the block's top
+                            and self.rect.right > block.left  # Horizontally overlapping
+                            and self.rect.left < block.right  # Horizontally overlapping
+                    ):
+                        self.y = block.top - self.height  # Align player to the top of the block
+                        on_block = True
+                        break
 
             if not on_block:
                 self.jumping = True  # Player starts falling if not above a block
 
 
     def gravity(self):
-        blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
+        if hasattr(current_world, 'moving_blocks'):
+            blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
+        else:
+            blocks = current_world.blocks
 
         if self.jumping:  # Apply gravity if jumping or falling
             self.y += self.jump_velocity
@@ -123,17 +153,31 @@ class Player:
 
             # Check for landing on a block
             for block in blocks:
-                if (
-                        self.rect.colliderect(block)
-                        and self.rect.bottom >= block.top  # Ensure player is actually landing
-                        and self.rect.bottom <= block.top + self.jump_velocity + 1  # Account for overshoot
-                        and self.rect.right > block.left  # Horizontally overlapping
-                        and self.rect.left < block.right  # Horizontally overlapping
-                ):
-                    self.y = block.top - self.height  # Align with block's top
-                    self.jumping = False  # Stop falling
-                    self.jump_velocity = 0  # Reset vertical velocity
-                    break
+                if isinstance(block, list):
+                    for b in block:
+                        if (
+                                self.rect.colliderect(b)
+                                and self.rect.bottom >= b.top  # Ensure player is actually landing
+                                and self.rect.bottom <= b.top + self.jump_velocity + 1  # Account for overshoot
+                                and self.rect.right > b.left  # Horizontally overlapping
+                                and self.rect.left < b.right  # Horizontally overlapping
+                        ):
+                            self.y = b.top - self.height
+                            self.jumping = False
+                            self.jump_velocity = 0
+                            break
+                else:
+                    if (
+                            self.rect.colliderect(block)
+                            and self.rect.bottom >= block.top  # Ensure player is actually landing
+                            and self.rect.bottom <= block.top + self.jump_velocity + 1  # Account for overshoot
+                            and self.rect.right > block.left  # Horizontally overlapping
+                            and self.rect.left < block.right  # Horizontally overlapping
+                    ):
+                        self.y = block.top - self.height  # Align with block's top
+                        self.jumping = False  # Stop falling
+                        self.jump_velocity = 0  # Reset vertical velocity
+                        break
         else:
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
@@ -144,16 +188,18 @@ class Player:
             self.health -= 1
             self.x = 50
             self.y = HEIGHT // 2 + 200
-        for spike in current_world.spikes:
-            if self.rect.colliderect(spike):
-                self.health -= 1
-                self.x = 50
-                self.y = HEIGHT // 2 + 200
-        for spike in current_world.special_spikes:
-            if self.rect.colliderect(spike):
-                self.health -= 1
-                self.x = 50
-                self.y = HEIGHT // 2 + 200
+        if hasattr(current_world, 'spikes'):
+            for spike in current_world.spikes:
+                if self.rect.colliderect(spike):
+                    self.health -= 1
+                    self.x = 50
+                    self.y = HEIGHT // 2 + 200
+        if hasattr(current_world, 'special_spikes'):
+            for spike in current_world.special_spikes:
+                if self.rect.colliderect(spike):
+                    self.health -= 1
+                    self.x = 50
+                    self.y = HEIGHT // 2 + 200
 
     def draw_hitbox(self):
         pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)
@@ -166,15 +212,56 @@ class Player:
             screen.blit(pygame.transform.scale(self.heart, (30, 30)), heart_rect)
 
     def events(self):
-        if player.rect.x < 0:
-            player.rect.x = 0
-        if player.rect.x > 250:
-            current_world.draw_special_spike(0)
-        if player.rect.x < 450:
-            current_world.draw_special_spike(1)
-        if player.rect.x > 500:
-            current_world.special_spikes.pop()
-            current_world.special_spikes.append(pygame.Rect(0, HEIGHT // 2 + 190, 50, 50))
+        if level == 0:
+            if world == 0:
+                level1.world1_events(player, current_world)
+
+    def check_for_new_world(self):
+        global world, current_world
+        if self.x > WIDTH:
+            world += 1
+            current_world = current_level.worlds[world]
+            self.x = 25
+            for block in current_world.blocks:
+                if isinstance(block, list):
+                    for b in block:
+                        if b.x == 0:
+                            self.y = b.y - self.height
+                else:
+                    if block.x == 0:
+                        self.y = block.y - self.height
+            self.jumping = False
+            self.jump_velocity = 0
+
+    def check_0_health(self):
+        global level, current_level, current_world, world
+        if self.health == 0:
+            title = pygame.font.Font(None, 72).render('Game Over', 1, (255, 0, 0))
+            title_rect = title.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            screen.blit(title, title_rect)
+            pygame.display.update()
+            pygame.time.wait(3000)
+            current_world = current_level.worlds[0]
+            world = 0
+            if level == 0:
+                level1.level1_start()
+                current_level = level_1.Level1()
+            self.events()
+            current_world.draw()
+            self.x = 25
+            for block in current_world.blocks:
+                if isinstance(block, list):
+                    for b in block:
+                        if b.x == 0:
+                            self.y = b.y - self.height
+                else:
+                    if block.x == 0:
+                        self.y = block.y - self.height
+            self.jumping = False
+            self.jump_velocity = 0
+            self.health = 5
+
+
 
 print(f'Created player object in {time.time() - initial_time} seconds')
 pygame.init()
@@ -185,17 +272,22 @@ pygame.display.set_caption("Game Menu")
 menu_items = ['Start', 'Quit']
 menu = Menu(GRAY, menu_items)
 selected = menu.run()
+world = 0
+level = 0
 if selected == 1:
     sys.exit()
 elif selected == 0:
     print('Starting game...')
     screen.fill(BLACK)
     player = Player()
-    current_level = level_1.Level_1()
-    current_world = level_1.Level_1.World_1()
+    current_level = level_1.Level1()
+    current_world = current_level.worlds[world]
+    level1.level1_start()
     running = True
     while running:
         screen.fill(BLACK)
+        player.check_for_new_world()
+        player.check_0_health()
         keys = pygame.key.get_pressed()
         player.update_position(keys)
         player.gravity()
