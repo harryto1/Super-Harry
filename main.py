@@ -233,7 +233,6 @@ class Player:
         else:
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-        # Check if player falls below the world or not on any block
 
     def check_dead(self):
         if self.immune:
