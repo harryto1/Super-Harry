@@ -162,6 +162,7 @@ class Player:
             blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
         else:
             blocks = current_world.blocks
+
         on_block = False
 
         if not self.jumping:  # Only check if the player is not jumping
@@ -169,25 +170,26 @@ class Player:
                 if isinstance(block, list):
                     for b in block:
                         if (
-                                self.rect.bottom <= b.top + self.speed  # Near or touching the block's top
+                                abs(self.rect.bottom - b.top) <= self.speed  # Near or touching the block's top
                                 and self.rect.right > b.left  # Horizontally overlapping
                                 and self.rect.left < b.right  # Horizontally overlapping
                         ):
                             on_block = True
                             break
                 else:
-                    # Check if the player is directly above a block
                     if (
-                            self.rect.bottom <= block.top + self.speed  # Near or touching the block's top
+                            abs(self.rect.bottom - block.top) <= self.speed  # Near or touching the block's top
                             and self.rect.right > block.left  # Horizontally overlapping
                             and self.rect.left < block.right  # Horizontally overlapping
                     ):
-                        self.y = block.top - self.height  # Align player to the top of the block
                         on_block = True
                         break
 
-            if not on_block:
-                self.jumping = True  # Player starts falling if not above a block
+        if on_block:
+            self.jumping = False
+            self.jump_velocity = 0
+        else:
+            self.jumping = True  # Player starts falling if not above a block
 
 
     def gravity(self):

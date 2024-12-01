@@ -77,7 +77,8 @@ class Level1:
     class World2:
         def __init__(self):
             self.blocks = [
-                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 300, 50) for y in range(260, HEIGHT, 50)]
+                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 300, 50) for y in range(260, HEIGHT, 50)],
+                [pygame.Rect(x, HEIGHT // 2 + 50, 50, 50) for x in range(100, 201, 50)]
             ]
         def draw(self):
             for block in self.blocks:
