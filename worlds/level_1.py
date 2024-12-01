@@ -29,7 +29,7 @@ class Level1:
                 [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 500, 50) for y in range(240, HEIGHT, 50)],
                 pygame.Rect(575, HEIGHT // 2 + 200, 50, 50),
                 pygame.Rect(700, HEIGHT // 2 + 150, 50, 50),
-                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(1300, 1600, 50) for y in range(260, HEIGHT, 50)]
+                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(1300, WIDTH, 50) for y in range(260, HEIGHT, 50)]
 
             ]
             self.moving_blocks = [
