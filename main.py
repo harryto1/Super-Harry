@@ -37,6 +37,11 @@ class Player:
         for i in range(8):
             sprite = self.walk_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
             self.walk_sprites.append(sprite)
+        self.hurt_spritesheet = pygame.image.load('assets/characters/player/Soldier-Hurt.png')
+        self.hurt_sprites = []
+        for i in range(4):
+            sprite = self.hurt_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
+            self.hurt_sprites.append(sprite)
         self.idle_frame = 0
         self.walk_frame = 0
         self.last_update = pygame.time.get_ticks()
@@ -66,6 +71,17 @@ class Player:
             sprite = pygame.transform.flip(sprite, True, False)
         screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2, self.y - (self.sprite_height - self.height) + self.height + 45))
         self.draw_hitbox()
+
+    def draw_hurt_animation(self):
+        if not self.hurt_sprites:
+            return
+        for i in range(4):
+            sprite = pygame.transform.scale(self.hurt_sprites[i], (self.sprite_width, self.sprite_height))
+            if self.facing_left:
+                sprite = pygame.transform.flip(sprite, True, False)
+            screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2, self.y - (self.sprite_height - self.height) + self.height + 45))
+            pygame.display.update()
+            pygame.time.wait(200)
 
     def update_position(self, keys):
         self.moving = False
@@ -185,18 +201,22 @@ class Player:
 
     def check_dead(self):
         if self.y > HEIGHT:
+            self.y -= 60
+            self.draw_hurt_animation()
             self.health -= 1
             self.x = 50
             self.y = HEIGHT // 2 + 200
         if hasattr(current_world, 'spikes'):
             for spike in current_world.spikes:
                 if self.rect.colliderect(spike):
+                    self.draw_hurt_animation()
                     self.health -= 1
                     self.x = 50
                     self.y = HEIGHT // 2 + 200
         if hasattr(current_world, 'special_spikes'):
             for spike in current_world.special_spikes:
                 if self.rect.colliderect(spike):
+                    self.draw_hurt_animation()
                     self.health -= 1
                     self.x = 50
                     self.y = HEIGHT // 2 + 200
