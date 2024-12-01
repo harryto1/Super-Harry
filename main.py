@@ -42,11 +42,17 @@ class Player:
         for i in range(4):
             sprite = self.hurt_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
             self.hurt_sprites.append(sprite)
+        self.death_spritesheet = pygame.image.load('assets/characters/player/Soldier-Death.png')
+        self.death_sprites = []
+        for i in range(4):
+            sprite = self.death_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
+            self.death_sprites.append(sprite)
         self.idle_frame = 0
         self.walk_frame = 0
         self.last_update = pygame.time.get_ticks()
         self.frame_rate = 100  # milliseconds per frame
         self.heart = pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png')
+        self.immune = False
 
     def draw_idle(self):
         now = pygame.time.get_ticks()
@@ -83,7 +89,20 @@ class Player:
             pygame.display.update()
             pygame.time.wait(200)
 
+    def draw_death_animation(self):
+        if not self.death_sprites:
+            return
+        for i in range(4):
+            screen.fill(BLACK)
+            sprite = pygame.transform.scale(self.death_sprites[i], (self.sprite_width, self.sprite_height))
+            if self.facing_left:
+                sprite = pygame.transform.flip(sprite, True, False)
+            screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2, self.y - (self.sprite_height - self.height) + self.height + 45))
+            pygame.display.update()
+            pygame.time.wait(200)
+
     def update_position(self, keys):
+        global world, current_world
         self.moving = False
         if keys[pygame.K_a]:
             self.x -= self.speed
@@ -117,8 +136,23 @@ class Player:
                             self.x = block.right
                         else:
                             self.x = block.left - self.width
-        if player.x < 0:
-            player.x = 0
+        if world == 0:
+            if player.x < 0:
+                player.x = 0
+        else:
+            if player.x < 0:
+                world -= 1
+                current_world = current_level.worlds[world]
+                player.x = WIDTH - 50
+                for block in current_world.blocks:
+                    if isinstance(block, list):
+                        for b in block:
+                            if b.x == player.x:
+                                player.y = b.y - player.height
+                    else:
+                        if block.x == player.x:
+                            player.y = block.y - player.height
+
 
         # Update the player's rectangle position again after collision adjustment
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
@@ -200,26 +234,52 @@ class Player:
         # Check if player falls below the world or not on any block
 
     def check_dead(self):
-        if self.y > HEIGHT:
-            self.y -= 60
-            self.draw_hurt_animation()
-            self.health -= 1
-            self.x = 50
-            self.y = HEIGHT // 2 + 200
-        if hasattr(current_world, 'spikes'):
-            for spike in current_world.spikes:
-                if self.rect.colliderect(spike):
-                    self.draw_hurt_animation()
-                    self.health -= 1
-                    self.x = 50
-                    self.y = HEIGHT // 2 + 200
-        if hasattr(current_world, 'special_spikes'):
-            for spike in current_world.special_spikes:
-                if self.rect.colliderect(spike):
-                    self.draw_hurt_animation()
-                    self.health -= 1
-                    self.x = 50
-                    self.y = HEIGHT // 2 + 200
+        if self.immune:
+            return
+        if self.health > 1:
+            if self.y > HEIGHT:
+                self.y -= 60
+                self.draw_hurt_animation()
+                self.health -= 1
+                self.x = 50
+                self.y = HEIGHT // 2 + 200
+            if hasattr(current_world, 'spikes'):
+                for spike in current_world.spikes:
+                    if self.rect.colliderect(spike):
+                        self.draw_hurt_animation()
+                        self.health -= 1
+                        self.x = 50
+                        self.y = HEIGHT // 2 + 200
+            if hasattr(current_world, 'special_spikes'):
+                for spike in current_world.special_spikes:
+                    if self.rect.colliderect(spike):
+                        self.draw_hurt_animation()
+                        self.health -= 1
+                        self.x = 50
+                        self.y = HEIGHT // 2 + 200
+        else:
+
+            if self.y > HEIGHT:
+                self.y -= 60
+                self.draw_death_animation()
+                self.health -= 1
+                self.x = 50
+                self.y = HEIGHT // 2 + 200
+            if hasattr(current_world, 'spikes'):
+                for spike in current_world.spikes:
+                    if self.rect.colliderect(spike):
+                        self.draw_death_animation()
+                        self.health -= 1
+                        self.x = 50
+                        self.y = HEIGHT // 2 + 200
+            if hasattr(current_world, 'special_spikes'):
+                for spike in current_world.special_spikes:
+                    if self.rect.colliderect(spike):
+                        self.draw_death_animation()
+                        self.health -= 1
+                        self.x = 50
+                        self.y = HEIGHT // 2 + 200
+
 
     def draw_hitbox(self):
         pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)
@@ -245,14 +305,13 @@ class Player:
             for block in current_world.blocks:
                 if isinstance(block, list):
                     for b in block:
-                        if b.x == 0:
+                        if b.x == self.x:
                             self.y = b.y - self.height + 10
                 else:
-                    if block.x == 0:
+                    if block.x == self.x:
                         self.y = block.y - self.height + 10
             self.jumping = False
             self.jump_velocity = 0
-            self.health += 1
 
     def check_0_health(self):
         global level, current_level, current_world, world
@@ -273,10 +332,10 @@ class Player:
             for block in current_world.blocks:
                 if isinstance(block, list):
                     for b in block:
-                        if b.x == 0:
+                        if b.x == self.x:
                             self.y = b.y - self.height
                 else:
-                    if block.x == 0:
+                    if block.x == self.x:
                         self.y = block.y - self.height
             self.jumping = False
             self.jump_velocity = 0
