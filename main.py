@@ -258,6 +258,13 @@ class Player:
                         self.health -= 1
                         self.x = 50
                         self.y = HEIGHT // 2 + 200
+            if hasattr(current_world, 'inverted_spikes'):
+                for spike in current_world.inverted_spikes:
+                    if self.rect.colliderect(spike):
+                        self.draw_hurt_animation()
+                        self.health -= 1
+                        self.x = 50
+                        self.y = HEIGHT // 2 + 200
         else:
 
             if self.y > HEIGHT:
@@ -275,6 +282,13 @@ class Player:
                         self.y = HEIGHT // 2 + 200
             if hasattr(current_world, 'special_spikes'):
                 for spike in current_world.special_spikes:
+                    if self.rect.colliderect(spike):
+                        self.draw_death_animation()
+                        self.health -= 1
+                        self.x = 50
+                        self.y = HEIGHT // 2 + 200
+            if hasattr(current_world, 'inverted_spikes'):
+                for spike in current_world.inverted_spikes:
                     if self.rect.colliderect(spike):
                         self.draw_death_animation()
                         self.health -= 1
@@ -341,6 +355,13 @@ class Player:
             self.jumping = False
             self.jump_velocity = 0
             self.health = 5
+            if hasattr(current_world, 'moving_spike_activated'):
+                current_world.moving_spike_activated = False
+                if hasattr(current_world, 'inverted_spikes'):
+                    current_world.inverted_spikes = [
+                        pygame.Rect(WIDTH - 200, -50, 50, 50),
+                        pygame.Rect(WIDTH - 150, -50, 50, 50),
+                    ]
 
 
 

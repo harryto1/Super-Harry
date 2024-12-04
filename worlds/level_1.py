@@ -42,6 +42,12 @@ class Level1:
                 pygame.Rect(300, HEIGHT // 2 + 190, 50, 50),
                 pygame.Rect(575, HEIGHT // 2 + 150, 50, 50),
             ]
+            # The spikes below have a moving functionality when the player reaches them
+            self.inverted_spikes = [
+                pygame.Rect(WIDTH - 200, -50, 50, 50),
+                pygame.Rect(WIDTH - 150, -50, 50, 50),
+            ]
+            self.moving_spike_activated = False # This is a boolean that checks if the moving spike is activated
         def draw(self):
             for block in self.blocks:
                 if isinstance(block, list):
@@ -65,6 +71,16 @@ class Level1:
                     moving_block[1] = 'left'
                 if moving_block[0].x < 800:
                     moving_block[1] = 'right'
+            if len(self.inverted_spikes) > 0:
+                for inverted_spike in self.inverted_spikes:
+                    if self.moving_spike_activated:
+                        inverted_spike.y += 24
+                        if inverted_spike.y > HEIGHT - 280:
+                            self.moving_spike_activated = False
+                            self.inverted_spikes = []
+                    if self.moving_spike_activated:
+                        pygame.draw.rect(screen, (255, 0, 0), inverted_spike, 2)
+                        screen.blit(self.spikes_sprites[2], (inverted_spike.x, inverted_spike.y))
 
 
 

@@ -86,4 +86,7 @@ def world1_events(player, current_world):
     if player.rect.x > 500:
         current_world.special_spikes.pop()
         current_world.special_spikes.append(pygame.Rect(0, HEIGHT // 2 + 190, 50, 50))
+    if WIDTH - 300 < player.rect.x < WIDTH - 280:
+        if hasattr(current_world, 'moving_spike_activated'):
+            current_world.moving_spike_activated = True
 
