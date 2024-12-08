@@ -4,6 +4,7 @@ import sys
 from menus.game_menu import Menu
 from constants.constants import *
 from menus.pause_menu import PauseMenu
+from menus.game_over_menu import Game_Over_Menu
 from worlds import level_1
 from worlds.events import level1
 
@@ -331,16 +332,18 @@ class Player:
     def check_0_health(self):
         global level, current_level, current_world, world
         if self.health == 0:
-            title = pygame.font.Font(None, 72).render('Game Over', 1, (255, 0, 0))
-            title_rect = title.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-            screen.blit(title, title_rect)
-            pygame.display.update()
-            pygame.time.wait(2000)
+            options = ['Restart', 'Quit']
+            game_over_menu = Game_Over_Menu(GRAY, options)
+            selected_option = game_over_menu.run()
+            if selected_option == 1:
+                sys.exit()
             current_world = current_level.worlds[0]
             world = 0
             if level == 0:
                 level1.level1_start()
                 current_level = level_1.Level1()
+                current_level.draw_background_once()
+
             self.events()
             current_world.draw()
             self.x = 25
@@ -387,9 +390,10 @@ elif selected == 0:
     current_level = level_1.Level1()
     current_world = current_level.worlds[world]
     level1.level1_start()
+    current_level.draw_background_once()  # Remember to change this when changing to another level
     running = True
     while running:
-        screen.fill(BLACK)
+        current_level.draw_background()
         if level == 0 and not a_or_d:
             if level1.start_instructions(player):
                 a_or_d = True

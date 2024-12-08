@@ -10,6 +10,9 @@ class Level1:
     def __init__(self):
         self.bg_color = (0, 0, 0)
         self.worlds = [self.World1(), self.World2()]
+        self.background_surface = pygame.Surface((WIDTH, HEIGHT))
+        self.background_spritesheet = pygame.image.load('assets/worlds/background/Dungeon_brick_wall_blue.png.png')
+        self.background_sprite = pygame.transform.scale(self.background_spritesheet.subsurface(pygame.Rect(0, 0, 1920, 1080)), (WIDTH, HEIGHT))
         self.block_spritesheet = pygame.image.load('assets/worlds/blocks/blocks.png')
         self.spikes_spritesheet = pygame.image.load('assets/worlds/enemies/16-bit-spike-Sheet.png')
         for i in range(5):
@@ -20,6 +23,14 @@ class Level1:
             sprite = self.spikes_spritesheet.subsurface(pygame.Rect(i * 16, 0, 16, 16))
             sprite = pygame.transform.scale(sprite, (50, 50))
             self.spikes_sprites.append(sprite)
+
+
+    def draw_background_once(self):
+        self.background_surface.blit(self.background_sprite, (0, 0))
+        self.background_surface.fill((50, 50, 50), special_flags=pygame.BLEND_RGB_MULT)
+
+    def draw_background(self):
+        screen.blit(self.background_surface, (0, 0))
 
     class World1:
         def __init__(self):
@@ -81,9 +92,6 @@ class Level1:
                     if self.moving_spike_activated:
                         pygame.draw.rect(screen, (255, 0, 0), inverted_spike, 2)
                         screen.blit(self.spikes_sprites[2], (inverted_spike.x, inverted_spike.y))
-
-
-
 
 
         def draw_special_spike(self, n):
