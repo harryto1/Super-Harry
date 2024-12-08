@@ -335,7 +335,7 @@ class Player:
             title_rect = title.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(title, title_rect)
             pygame.display.update()
-            pygame.time.wait(3000)
+            pygame.time.wait(2000)
             current_world = current_level.worlds[0]
             world = 0
             if level == 0:
@@ -397,15 +397,15 @@ elif selected == 0:
             if level1.space_instructions(player):
                 space_instructions_done = True
         player.check_for_new_world()
-        player.check_0_health()
         keys = pygame.key.get_pressed()
         player.update_position(keys)
         player.gravity()
         player.check_if_on_block()
-        player.check_dead()
         current_world.draw()
         player.draw_hearts()
         player.events()
+        player.check_dead()
+        player.check_0_health()
         if player.moving:
             player.draw_walk_animation()
         else:
