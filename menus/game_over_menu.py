@@ -2,7 +2,7 @@ import sys
 from constants.constants import *
 from menus.pause_menu import PauseMenu
 
-class Game_Over_Menu:
+class GameOverMenu:
     def __init__(self, font_color, menu_items):
         self.screen = screen
         self.bg_color = bg_color

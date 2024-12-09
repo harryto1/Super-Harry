@@ -4,7 +4,7 @@ import sys
 from menus.game_menu import Menu
 from constants.constants import *
 from menus.pause_menu import PauseMenu
-from menus.game_over_menu import Game_Over_Menu
+from menus.game_over_menu import GameOverMenu
 from worlds import level_1
 from worlds.events import level1
 
@@ -333,7 +333,7 @@ class Player:
         global level, current_level, current_world, world
         if self.health == 0:
             options = ['Restart', 'Quit']
-            game_over_menu = Game_Over_Menu(GRAY, options)
+            game_over_menu = GameOverMenu(GRAY, options)
             selected_option = game_over_menu.run()
             if selected_option == 1:
                 sys.exit()
@@ -424,3 +424,8 @@ elif selected == 0:
                         sys.exit()
         pygame.display.update()
         Clock.tick(60)  # Set the frame rate to 60 FPS
+
+# Ideas:
+# Chest on Level 1 World 2 with a key to a secret room or a jump boost effect
+# Boss Fight
+# A container of blocks that spin 360 on Level 1 World 2
