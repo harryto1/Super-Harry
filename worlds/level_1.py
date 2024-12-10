@@ -104,6 +104,14 @@ class Level1:
                 [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 300, 50) for y in range(260, HEIGHT, 50)],
                 [pygame.Rect(x, HEIGHT // 2 + 50, 50, 50) for x in range(100, 201, 50)]
             ]
+
+            self.moving_blocks = [
+                [pygame.Rect(400, HEIGHT // 2 + 100, 50, 50), 'down'],
+                [pygame.Rect(550, HEIGHT // 2 + 100, 50, 50), 'down'],
+                [pygame.Rect(700, HEIGHT // 2 + 100, 50, 50), 'down'],
+            ]
+
+
         def draw(self):
             for block in self.blocks:
                 if isinstance(block, list):
@@ -113,4 +121,14 @@ class Level1:
                 else:
                     pygame.draw.rect(screen, (0, 255, 0), block)
                     screen.blit(Level1.block_sprites[0], (block.x, block.y))
-
+            for block in self.moving_blocks:
+                pygame.draw.rect(screen, (0, 0, 255), block[0])
+                screen.blit(Level1.block_sprites[0], (block[0].x, block[0].y))
+                if block[1] == 'down':
+                    block[0].y += 3
+                if block[0].y > HEIGHT - 50:
+                    block[1] = 'up'
+                if block[1] == 'up':
+                    block[0].y -= 3
+                if block[0].y < HEIGHT // 2 + 100:
+                    block[1] = 'down'

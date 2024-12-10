@@ -159,36 +159,45 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def check_if_on_block(self):
+        blocks = []
+        for block_group in current_world.blocks:
+            if isinstance(block_group, list):
+                blocks.extend(block_group)
+            else:
+                blocks.append(block_group)
+
+        moving_blocks = []
         if hasattr(current_world, 'moving_blocks'):
-            blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
-        else:
-            blocks = current_world.blocks
+            for moving_block in current_world.moving_blocks:
+                moving_blocks.append(moving_block[0])
+
+        blocks.extend(moving_blocks)
+
 
         on_block = False
+        block_beneath = None
 
         if not self.jumping:  # Only check if the player is not jumping
             for block in blocks:
-                if isinstance(block, list):
-                    for b in block:
-                        if (
-                                abs(self.rect.bottom - b.top) <= self.speed  # Near or touching the block's top
-                                and self.rect.right > b.left  # Horizontally overlapping
-                                and self.rect.left < b.right  # Horizontally overlapping
-                        ):
-                            on_block = True
-                            break
-                else:
-                    if (
-                            abs(self.rect.bottom - block.top) <= self.speed  # Near or touching the block's top
-                            and self.rect.right > block.left  # Horizontally overlapping
-                            and self.rect.left < block.right  # Horizontally overlapping
-                    ):
-                        on_block = True
-                        break
+                if (
+                        abs(self.rect.bottom - block.top) <= self.speed  # Near or touching the block's top
+                        and self.rect.right > block.left  # Horizontally overlapping
+                        and self.rect.left < block.right  # Horizontally overlapping
+                ):
+                    on_block = True
+                    block_beneath = block
+                    break
 
         if on_block:
             self.jumping = False
             self.jump_velocity = 0
+
+            if block_beneath in moving_blocks:
+                for moving_block in current_world.moving_blocks:
+                    if moving_block[0] == block_beneath:
+                        self.y = block_beneath.top - self.height
+                        break
+
         else:
             self.jumping = True  # Player starts falling if not above a block
 
@@ -234,6 +243,26 @@ class Player:
         else:
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
+        if hasattr(current_world, 'moving_blocks'):
+            for moving_block in current_world.moving_blocks:
+                if (
+                        self.rect.colliderect(moving_block[0])
+                        and self.rect.bottom >= moving_block[0].top  # Ensure player is actually landing
+                        and self.rect.bottom <= moving_block[0].top + self.jump_velocity + 2  # Account for overshoot
+                        and self.rect.right > moving_block[0].left  # Horizontally overlapping
+                        and self.rect.left < moving_block[0].right  # Horizontally overlapping
+                ):
+                    if moving_block[1] == 'up':
+                        self.y = moving_block[0].top - self.height
+                        self.jumping = False
+                        self.jump_velocity = 0
+                        break
+                    elif moving_block[1] == 'down':
+                        self.y = moving_block[0].top - self.height
+                        self.jumping = False
+                        self.jump_velocity = 0
+                        break
+                    self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def check_dead(self):
         if self.immune:
