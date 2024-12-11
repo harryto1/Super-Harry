@@ -295,6 +295,22 @@ class Player:
                         self.health -= 1
                         self.x = 50
                         self.y = HEIGHT // 2 + 200
+            if hasattr(current_world, 'lava'):
+                for lava in current_world.lava:
+                    if isinstance(lava, list):
+                        for l in lava:
+                            if self.rect.colliderect(l):
+                                self.draw_hurt_animation()
+                                self.health -= 1
+                                self.x = 50
+                                self.y = HEIGHT // 2 + 200
+                    else:
+                        if self.rect.colliderect(lava):
+                            self.draw_hurt_animation()
+                            self.health -= 1
+                            self.x = 50
+                            self.y = HEIGHT // 2 + 200
+
         else:
 
             if self.y > HEIGHT:
@@ -324,6 +340,23 @@ class Player:
                         self.health -= 1
                         self.x = 50
                         self.y = HEIGHT // 2 + 200
+            if hasattr(current_world, 'lava'):
+                for lava in current_world.lava:
+                    if isinstance(lava, list):
+                        for l in lava:
+                            if self.rect.colliderect(l):
+                                self.draw_death_animation()
+                                self.health -= 1
+                                self.x = 50
+                                self.y = HEIGHT // 2 + 200
+                    else:
+                        if self.rect.colliderect(lava):
+                            self.draw_death_animation()
+                            self.health -= 1
+                            self.x = 50
+                            self.y = HEIGHT // 2 + 200
+
+
 
 
     def draw_hitbox(self):

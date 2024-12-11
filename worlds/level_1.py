@@ -1,3 +1,4 @@
+import pygame.time
 
 from constants.constants import *
 
@@ -6,6 +7,7 @@ from constants.constants import *
 class Level1:
     block_sprites = []
     spikes_sprites = []
+    lava_sprites = []
 
     def __init__(self):
         self.bg_color = (0, 0, 0)
@@ -15,6 +17,7 @@ class Level1:
         self.background_sprite = pygame.transform.scale(self.background_spritesheet.subsurface(pygame.Rect(0, 0, 1920, 1080)), (WIDTH, HEIGHT))
         self.block_spritesheet = pygame.image.load('assets/worlds/blocks/blocks.png')
         self.spikes_spritesheet = pygame.image.load('assets/worlds/enemies/16-bit-spike-Sheet.png')
+        self.lava_spritesheet = pygame.image.load('assets/worlds/enemies/spritesheet-burninglava.png')
         for i in range(5):
             sprite = self.block_spritesheet.subsurface(pygame.Rect(i * 32, 0, 32, 32))
             sprite = pygame.transform.scale(sprite, (50, 50))
@@ -23,7 +26,11 @@ class Level1:
             sprite = self.spikes_spritesheet.subsurface(pygame.Rect(i * 16, 0, 16, 16))
             sprite = pygame.transform.scale(sprite, (50, 50))
             self.spikes_sprites.append(sprite)
-
+        for i in range(49):
+            if 2 < i % 7 < 6:
+                sprite = self.lava_spritesheet.subsurface(pygame.Rect(i * 16, 32, 16, 16))
+                sprite = pygame.transform.scale(sprite, (50, 50))
+                self.lava_sprites.append(sprite)
 
     def draw_background_once(self):
         self.background_surface.blit(self.background_sprite, (0, 0))
@@ -102,7 +109,8 @@ class Level1:
         def __init__(self):
             self.blocks = [
                 [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 300, 50) for y in range(260, HEIGHT, 50)],
-                [pygame.Rect(x, HEIGHT // 2 + 50, 50, 50) for x in range(100, 201, 50)]
+                [pygame.Rect(x, HEIGHT // 2 + 50, 50, 50) for x in range(100, 201, 50)],
+                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(WIDTH - 320, WIDTH + 1, 50) for y in range(100, HEIGHT, 50)]
             ]
 
             self.moving_blocks = [
@@ -111,6 +119,9 @@ class Level1:
                 [pygame.Rect(700, HEIGHT // 2 + 100, 50, 50), 'down'],
             ]
 
+            self.lava = [
+                [pygame.Rect(x, y, 50, 50) for x in range(300, WIDTH - 350, 50) for y in range(HEIGHT, HEIGHT + 800, 50)]
+            ]
 
         def draw(self):
             for block in self.blocks:
@@ -130,5 +141,19 @@ class Level1:
                     block[1] = 'up'
                 if block[1] == 'up':
                     block[0].y -= 3
-                if block[0].y < HEIGHT // 2 + 100:
+                if block[0].y < HEIGHT // 2 + 150:
                     block[1] = 'down'
+
+            for lava in self.lava:
+                current_time = pygame.time.get_ticks()
+                if isinstance(lava, list):
+                    for l in lava:
+                        sprite_index = (current_time // 100) % len(Level1.lava_sprites)
+                        screen.blit(Level1.lava_sprites[sprite_index], (l.x, l.y))
+                        if current_time % 1000 < 50:
+                            l.y -= 1
+                else:
+                    sprite_index = (current_time // 100) % len(Level1.lava_sprites)
+                    screen.blit(Level1.lava_sprites[sprite_index], (lava.x, lava.y))
+                    if current_time % 1000 < 50:
+                        lava.y -= 1
