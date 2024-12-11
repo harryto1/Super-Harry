@@ -13,6 +13,7 @@ print(f'Imported all modules in {time.time() - initial_time} seconds')
 
 class Player:
     def __init__(self):
+        self.block_beneath = None
         self.x = 100
         self.y = HEIGHT // 2 + 200
         self.width = 35  # Rect width
@@ -175,7 +176,7 @@ class Player:
 
 
         on_block = False
-        block_beneath = None
+        self.block_beneath = None
 
         if not self.jumping:  # Only check if the player is not jumping
             for block in blocks:
@@ -185,17 +186,17 @@ class Player:
                         and self.rect.left < block.right  # Horizontally overlapping
                 ):
                     on_block = True
-                    block_beneath = block
+                    self.block_beneath = block
                     break
 
         if on_block:
             self.jumping = False
             self.jump_velocity = 0
 
-            if block_beneath in moving_blocks:
+            if self.block_beneath in moving_blocks:
                 for moving_block in current_world.moving_blocks:
-                    if moving_block[0] == block_beneath:
-                        self.y = block_beneath.top - self.height
+                    if moving_block[0] == self.block_beneath:
+                        self.y = self.block_beneath.top - self.height
                         break
 
         else:
@@ -268,94 +269,30 @@ class Player:
         if self.immune:
             return
         if self.health > 1:
-            if self.y > HEIGHT:
-                self.y -= 60
-                self.draw_hurt_animation()
-                self.health -= 1
-                self.x = 50
-                self.y = HEIGHT // 2 + 200
-            if hasattr(current_world, 'spikes'):
-                for spike in current_world.spikes:
-                    if self.rect.colliderect(spike):
-                        self.draw_hurt_animation()
-                        self.health -= 1
-                        self.x = 50
-                        self.y = HEIGHT // 2 + 200
-            if hasattr(current_world, 'special_spikes'):
-                for spike in current_world.special_spikes:
-                    if self.rect.colliderect(spike):
-                        self.draw_hurt_animation()
-                        self.health -= 1
-                        self.x = 50
-                        self.y = HEIGHT // 2 + 200
-            if hasattr(current_world, 'inverted_spikes'):
-                for spike in current_world.inverted_spikes:
-                    if self.rect.colliderect(spike):
-                        self.draw_hurt_animation()
-                        self.health -= 1
-                        self.x = 50
-                        self.y = HEIGHT // 2 + 200
-            if hasattr(current_world, 'lava'):
-                for lava in current_world.lava:
-                    if isinstance(lava, list):
-                        for l in lava:
-                            if self.rect.colliderect(l):
-                                self.draw_hurt_animation()
-                                self.health -= 1
-                                self.x = 50
-                                self.y = HEIGHT // 2 + 200
-                    else:
-                        if self.rect.colliderect(lava):
-                            self.draw_hurt_animation()
-                            self.health -= 1
-                            self.x = 50
-                            self.y = HEIGHT // 2 + 200
-
+            self._check_collisions(self.draw_hurt_animation)
         else:
+            self._check_collisions(self.draw_death_animation)
 
-            if self.y > HEIGHT:
-                self.y -= 60
-                self.draw_death_animation()
-                self.health -= 1
-                self.x = 50
-                self.y = HEIGHT // 2 + 200
-            if hasattr(current_world, 'spikes'):
-                for spike in current_world.spikes:
-                    if self.rect.colliderect(spike):
-                        self.draw_death_animation()
-                        self.health -= 1
-                        self.x = 50
-                        self.y = HEIGHT // 2 + 200
-            if hasattr(current_world, 'special_spikes'):
-                for spike in current_world.special_spikes:
-                    if self.rect.colliderect(spike):
-                        self.draw_death_animation()
-                        self.health -= 1
-                        self.x = 50
-                        self.y = HEIGHT // 2 + 200
-            if hasattr(current_world, 'inverted_spikes'):
-                for spike in current_world.inverted_spikes:
-                    if self.rect.colliderect(spike):
-                        self.draw_death_animation()
-                        self.health -= 1
-                        self.x = 50
-                        self.y = HEIGHT // 2 + 200
-            if hasattr(current_world, 'lava'):
-                for lava in current_world.lava:
-                    if isinstance(lava, list):
-                        for l in lava:
-                            if self.rect.colliderect(l):
-                                self.draw_death_animation()
-                                self.health -= 1
-                                self.x = 50
-                                self.y = HEIGHT // 2 + 200
-                    else:
-                        if self.rect.colliderect(lava):
-                            self.draw_death_animation()
-                            self.health -= 1
-                            self.x = 50
-                            self.y = HEIGHT // 2 + 200
+    def _check_collisions(self, animation_func):
+        if self.y > HEIGHT:
+            self._handle_collision(animation_func)
+        for attr in ['spikes', 'special_spikes', 'inverted_spikes', 'lava']:
+            if hasattr(current_world, attr):
+                for obj in getattr(current_world, attr):
+                    if isinstance(obj, list):
+                        for sub_obj in obj:
+                            if self.rect.colliderect(sub_obj):
+                                self._handle_collision(animation_func)
+                    elif self.rect.colliderect(obj):
+                        self._handle_collision(animation_func)
 
+    def _handle_collision(self, animation_func):
+        animation_func()
+        self.y = HEIGHT // 2 + 200
+        self.x = 50
+        self.health -= 1
+        if hasattr(current_world, 'regen'):
+            current_world.regen()
 
 
 
@@ -373,6 +310,8 @@ class Player:
         if level == 0:
             if world == 0:
                 level1.world1_events(player, current_world)
+            if world == 1:
+                level1.world2_events(player, current_world)
 
     def check_for_new_world(self):
         global world, current_world
@@ -393,7 +332,7 @@ class Player:
 
     def check_0_health(self):
         global level, current_level, current_world, world
-        if self.health == 0:
+        if self.health <= 0:
             options = ['Restart', 'Quit']
             game_over_menu = GameOverMenu(GRAY, options)
             selected_option = game_over_menu.run()
@@ -441,7 +380,7 @@ menu = Menu(GRAY, menu_items)
 selected = menu.run()
 a_or_d = False # Check if the player pressed A or D
 space_instructions_done = False # Check if the player pressed SPACE
-world = 0
+world = 1
 level = 0
 if selected == 1:
     sys.exit()

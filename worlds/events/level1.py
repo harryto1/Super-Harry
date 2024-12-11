@@ -90,3 +90,11 @@ def world1_events(player, current_world):
         if hasattr(current_world, 'moving_spike_activated'):
             current_world.moving_spike_activated = True
 
+def world2_events(player, current_world):
+    for moving_block in current_world.moving_blocks:
+        if moving_block[0] == player.block_beneath:
+            current_world.shake_block(moving_block[0])
+            if pygame.time.get_ticks() % 1000 < 20:
+                current_world.moving_blocks.remove(moving_block)
+
+

@@ -116,7 +116,7 @@ class Level1:
             self.moving_blocks = [
                 [pygame.Rect(400, HEIGHT // 2 + 100, 50, 50), 'down'],
                 [pygame.Rect(550, HEIGHT // 2 + 100, 50, 50), 'down'],
-                [pygame.Rect(700, HEIGHT // 2 + 100, 50, 50), 'down'],
+                [pygame.Rect(700, HEIGHT // 2 + 100, 50, 50), 'down']
             ]
 
             self.lava = [
@@ -151,9 +151,23 @@ class Level1:
                         sprite_index = (current_time // 100) % len(Level1.lava_sprites)
                         screen.blit(Level1.lava_sprites[sprite_index], (l.x, l.y))
                         if current_time % 1000 < 50:
-                            l.y -= 1
+                            l.y -= 2
                 else:
                     sprite_index = (current_time // 100) % len(Level1.lava_sprites)
                     screen.blit(Level1.lava_sprites[sprite_index], (lava.x, lava.y))
                     if current_time % 1000 < 50:
-                        lava.y -= 1
+                        lava.y -= 2
+
+        def shake_block(self, block):
+            if pygame.time.get_ticks() % 100 < 50:
+                block.x += 2
+            if 50 < pygame.time.get_ticks() % 100 < 100:
+                block.x -= 2
+
+        def regen(self):
+            self.moving_blocks = [
+                [pygame.Rect(400, HEIGHT // 2 + 100, 50, 50), 'down', True],
+                [pygame.Rect(550, HEIGHT // 2 + 100, 50, 50), 'down', True],
+                [pygame.Rect(700, HEIGHT // 2 + 100, 50, 50), 'down', True],
+            ]
+
