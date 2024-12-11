@@ -8,6 +8,7 @@ class Level1:
     block_sprites = []
     spikes_sprites = []
     lava_sprites = []
+    bonus_hearts_sprite = pygame.transform.scale(pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png'), (35, 35))
 
     def __init__(self):
         self.bg_color = (0, 0, 0)
@@ -123,6 +124,10 @@ class Level1:
                 [pygame.Rect(x, y, 50, 50) for x in range(300, WIDTH - 350, 50) for y in range(HEIGHT, HEIGHT + 800, 50)]
             ]
 
+            self.bonus_hearts = [
+                [pygame.Rect(150, HEIGHT // 2, 50, 50), True]
+            ]
+
         def draw(self):
             for block in self.blocks:
                 if isinstance(block, list):
@@ -157,6 +162,13 @@ class Level1:
                     screen.blit(Level1.lava_sprites[sprite_index], (lava.x, lava.y))
                     if current_time % 1000 < 50:
                         lava.y -= 2
+            for heart in self.bonus_hearts:
+                if heart[1]:
+                    pygame.draw.rect(screen, (255, 0, 0), heart[0], 2)
+                    screen.blit(Level1.bonus_hearts_sprite, (
+                    heart[0].x + (heart[0].width - Level1.bonus_hearts_sprite.get_width()) // 2,
+                    heart[0].y + (heart[0].height - Level1.bonus_hearts_sprite.get_height()) // 2))
+
 
         def shake_block(self, block):
             if pygame.time.get_ticks() % 100 < 50:

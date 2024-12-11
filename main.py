@@ -380,7 +380,7 @@ menu = Menu(GRAY, menu_items)
 selected = menu.run()
 a_or_d = False # Check if the player pressed A or D
 space_instructions_done = False # Check if the player pressed SPACE
-world = 1
+world = 0
 level = 0
 if selected == 1:
     sys.exit()
