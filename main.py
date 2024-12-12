@@ -275,6 +275,7 @@ class Player:
 
     def _check_collisions(self, animation_func):
         if self.y > HEIGHT:
+            self.y = HEIGHT - self.height
             self._handle_collision(animation_func)
         for attr in ['spikes', 'special_spikes', 'inverted_spikes', 'lava']:
             if hasattr(current_world, attr):
@@ -283,8 +284,10 @@ class Player:
                         for sub_obj in obj:
                             if self.rect.colliderect(sub_obj):
                                 self._handle_collision(animation_func)
+                                break # Prevent multiple collisions
                     elif self.rect.colliderect(obj):
                         self._handle_collision(animation_func)
+                        break # Prevent multiple collisions
 
     def _handle_collision(self, animation_func):
         animation_func()
