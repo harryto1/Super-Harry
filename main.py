@@ -167,6 +167,9 @@ class Player:
             else:
                 blocks.append(block_group)
 
+        if hasattr(current_world, 'visible_blocks'):
+            blocks.extend(current_world.visible_blocks)
+
         moving_blocks = []
         if hasattr(current_world, 'moving_blocks'):
             for moving_block in current_world.moving_blocks:
@@ -204,10 +207,19 @@ class Player:
 
 
     def gravity(self):
+        blocks = []
+        for block_group in current_world.blocks:
+            if isinstance(block_group, list):
+                blocks.extend(block_group)
+            else:
+                blocks.append(block_group)
+
+        if hasattr(current_world, 'visible_blocks'):
+            blocks.extend(current_world.visible_blocks)
+
         if hasattr(current_world, 'moving_blocks'):
-            blocks = current_world.blocks + [block[0] for block in current_world.moving_blocks]
-        else:
-            blocks = current_world.blocks
+            blocks += [block[0] for block in current_world.moving_blocks]
+
 
         if self.jumping:  # Apply gravity if jumping or falling
             self.y += self.jump_velocity
@@ -430,6 +442,5 @@ elif selected == 0:
         Clock.tick(60)  # Set the frame rate to 60 FPS
 
 # Ideas:
-# Chest on Level 1 World 2 with a key to a secret room or a jump boost effect
 # Boss Fight
-# A container of blocks that spin 360 on Level 1 World 2
+# when reaching the end of world 2 add a barrier to troll the player lol

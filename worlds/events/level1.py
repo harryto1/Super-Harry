@@ -90,12 +90,32 @@ def world1_events(player, current_world):
         if hasattr(current_world, 'moving_spike_activated'):
             current_world.moving_spike_activated = True
 
+
+disappearing_blocks_2 = []
+
+
 def world2_events(player, current_world):
+    current_time = pygame.time.get_ticks()
+
     for moving_block in current_world.moving_blocks:
         if moving_block[0] == player.block_beneath:
             current_world.shake_block(moving_block[0])
-            if pygame.time.get_ticks() % 1000 < 20:
+            if current_time % 1000 < 20:
                 current_world.moving_blocks.remove(moving_block)
+
+    global disappearing_blocks_2
+    disappearing_blocks_2.clear()  # Clear the list at the start of each call
+
+    for disappearing_block in current_world.disappearing_blocks:
+        for i, block in enumerate(disappearing_block):
+            if (current_time // 1000) % 2 == 0:
+                if i % 2 == 0:
+                    disappearing_blocks_2.append(block)
+            else:
+                if i % 2 != 0:
+                    disappearing_blocks_2.append(block)
+
+    current_world.visible_blocks = [block for block in current_world.disappearing_blocks[0] if block not in disappearing_blocks_2]
 
     for bonus_heart in current_world.bonus_hearts:
         if player.rect.colliderect(bonus_heart[0]):
@@ -105,6 +125,5 @@ def world2_events(player, current_world):
             text_rect = text.get_rect(center=(bonus_heart[0].centerx, bonus_heart[0].centery - 50))
             screen.blit(text, text_rect)
             current_world.bonus_hearts.remove(bonus_heart)
-
 
 

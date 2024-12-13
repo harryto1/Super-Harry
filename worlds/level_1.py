@@ -119,6 +119,11 @@ class Level1:
                 [pygame.Rect(550, HEIGHT // 2 + 100, 50, 50), 'down'],
                 [pygame.Rect(700, HEIGHT // 2 + 100, 50, 50), 'down']
             ]
+            self.disappearing_blocks = [
+                [pygame.Rect(x, HEIGHT // 2 + 75, 50, 50) for x in range(800, WIDTH // 2 + 200, 50)]
+            ]
+
+            self.visible_blocks = self.disappearing_blocks[0]
 
             self.lava = [
                 [pygame.Rect(x, y, 50, 50) for x in range(300, WIDTH - 350, 50) for y in range(HEIGHT, HEIGHT + 800, 50)]
@@ -148,6 +153,10 @@ class Level1:
                     block[0].y -= 3
                 if block[0].y < HEIGHT // 2 + 150:
                     block[1] = 'down'
+
+            for block in self.visible_blocks:
+                pygame.draw.rect(screen, (0, 255, 0), block)
+                screen.blit(Level1.block_sprites[0], (block.x, block.y))
 
             for lava in self.lava:
                 current_time = pygame.time.get_ticks()
