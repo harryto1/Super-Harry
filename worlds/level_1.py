@@ -1,3 +1,5 @@
+import random
+
 import pygame.time
 
 from constants.constants import *
@@ -8,6 +10,7 @@ class Level1:
     block_sprites = []
     spikes_sprites = []
     lava_sprites = []
+    fireball_sprites = []
     bonus_hearts_sprite = pygame.transform.scale(pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png'), (35, 35))
 
     def __init__(self):
@@ -19,6 +22,7 @@ class Level1:
         self.block_spritesheet = pygame.image.load('assets/worlds/blocks/blocks.png')
         self.spikes_spritesheet = pygame.image.load('assets/worlds/enemies/16-bit-spike-Sheet.png')
         self.lava_spritesheet = pygame.image.load('assets/worlds/enemies/spritesheet-burninglava.png')
+        self.fireball_spritesheet = pygame.image.load('assets/worlds/enemies/Firebolt SpriteSheet.png')
         for i in range(5):
             sprite = self.block_spritesheet.subsurface(pygame.Rect(i * 32, 0, 32, 32))
             sprite = pygame.transform.scale(sprite, (50, 50))
@@ -32,6 +36,12 @@ class Level1:
                 sprite = self.lava_spritesheet.subsurface(pygame.Rect(i * 16, 32, 16, 16))
                 sprite = pygame.transform.scale(sprite, (50, 50))
                 self.lava_sprites.append(sprite)
+        for i in range(4):
+            sprite = self.fireball_spritesheet.subsurface(pygame.Rect(i * 48, 0, 48, 48))
+            sprite = pygame.transform.rotate(sprite, 90)
+            sprite = pygame.transform.scale(sprite, (100, 100))
+            self.fireball_sprites.append(sprite)
+
 
     def draw_background_once(self):
         self.background_surface.blit(self.background_sprite, (0, 0))
@@ -111,7 +121,8 @@ class Level1:
             self.blocks = [
                 [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 300, 50) for y in range(260, HEIGHT, 50)],
                 [pygame.Rect(x, HEIGHT // 2 + 50, 50, 50) for x in range(100, 201, 50)],
-                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(WIDTH - 320, WIDTH + 1, 50) for y in range(100, HEIGHT, 50)]
+                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(WIDTH - 320, WIDTH + 1, 50) for y in range(100, HEIGHT, 50)],
+                [pygame.Rect(x, HEIGHT // 2 + 25, 50, 50) for x in range(WIDTH - 600, WIDTH - 451, 50)]
             ]
 
             self.moving_blocks = [
@@ -131,6 +142,15 @@ class Level1:
 
             self.bonus_hearts = [
                 [pygame.Rect(150, HEIGHT // 2, 50, 50), True]
+            ]
+
+            self.fireballs = [
+                pygame.Rect(random.randint(300, WIDTH -350), HEIGHT // 2 + 100, 35, 50),
+                pygame.Rect(random.randint(300, WIDTH - 350), HEIGHT // 2 + 100, 35, 50)
+            ]
+
+            self.barrier_blocks = [
+                [pygame.Rect(WIDTH - 320, y, 50, 50) for y in range(HEIGHT // 2 + 50, HEIGHT // 2 - 300, -50)]
             ]
 
         def draw(self):
@@ -177,6 +197,31 @@ class Level1:
                     screen.blit(Level1.bonus_hearts_sprite, (
                     heart[0].x + (heart[0].width - Level1.bonus_hearts_sprite.get_width()) // 2,
                     heart[0].y + (heart[0].height - Level1.bonus_hearts_sprite.get_height()) // 2))
+            for fireball in self.fireballs:
+                current_time = pygame.time.get_ticks()
+                sprite_index = (current_time // 100) % len(Level1.fireball_sprites)
+                sprite = Level1.fireball_sprites[sprite_index]
+                sprite_rect = sprite.get_rect(center=fireball.midbottom)
+                sprite_rect.x -= 12.5
+                sprite_rect.y -= 10
+                fireball.y -= 7
+                if fireball.y < -750:
+                    fireball.y = self.lava[0][0].y - 25
+                    fireball.x = random.randint(300, WIDTH - 350)
+                if any(fireball.colliderect(other) for other in self.fireballs if other != fireball):
+                    fireball.x = random.randint(300, WIDTH - 350)
+                screen.blit(sprite, sprite_rect.topleft)
+                pygame.draw.rect(screen, (255, 0, 0), fireball, 2)
+
+        def draw_troll_barrier(self):
+            for block in self.barrier_blocks:
+                if isinstance(block, list):
+                    for b in block:
+                        pygame.draw.rect(screen, (0, 255, 0), b)
+                        screen.blit(Level1.block_sprites[0], (b.x, b.y))
+                else:
+                    pygame.draw.rect(screen, (0, 255, 0), block)
+                    screen.blit(Level1.block_sprites[0], (block.x, block.y))
 
 
         def shake_block(self, block):

@@ -126,4 +126,7 @@ def world2_events(player, current_world):
             screen.blit(text, text_rect)
             current_world.bonus_hearts.remove(bonus_heart)
 
+    if player.x > WIDTH - 350:
+        current_world.draw_troll_barrier()
+
 

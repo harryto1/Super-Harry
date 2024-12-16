@@ -289,7 +289,7 @@ class Player:
         if self.y > HEIGHT:
             self.y = HEIGHT - self.height
             self._handle_collision(animation_func)
-        for attr in ['spikes', 'special_spikes', 'inverted_spikes', 'lava']:
+        for attr in ['spikes', 'special_spikes', 'inverted_spikes', 'lava', 'fireballs']:
             if hasattr(current_world, attr):
                 for obj in getattr(current_world, attr):
                     if isinstance(obj, list):
