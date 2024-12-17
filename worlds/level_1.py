@@ -185,12 +185,14 @@ class Level1:
                         sprite_index = (current_time // 100) % len(Level1.lava_sprites)
                         screen.blit(Level1.lava_sprites[sprite_index], (l.x, l.y))
                         if current_time % 1000 < 50:
-                            l.y -= 2
+                            if lava[0].y > HEIGHT // 2 + 260:
+                                l.y -= 2
                 else:
                     sprite_index = (current_time // 100) % len(Level1.lava_sprites)
                     screen.blit(Level1.lava_sprites[sprite_index], (lava.x, lava.y))
                     if current_time % 1000 < 50:
-                        lava.y -= 2
+                        if lava.y > HEIGHT // 2 + 260:
+                            lava.y -= 2
             for heart in self.bonus_hearts:
                 if heart[1]:
                     pygame.draw.rect(screen, (255, 0, 0), heart[0], 2)
