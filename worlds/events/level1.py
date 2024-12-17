@@ -128,5 +128,7 @@ def world2_events(player, current_world):
 
     if player.x > WIDTH - 400:
         current_world.draw_troll_barrier()
+    if player.x > WIDTH - 400 and player.y > HEIGHT + 100:
+        current_world.barrier_blocks.clear()
 
 
