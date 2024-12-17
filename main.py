@@ -122,22 +122,33 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         # Check for horizontal collisions
-        for block in current_world.blocks:
-            if isinstance(block, list):
-                for b in block:
-                    if self.rect.colliderect(b):
-                        if self.rect.bottom > b.top and self.rect.top < b.bottom:
-                            if self.facing_left:
-                                self.x = b.right
-                            else:
-                                self.x = b.left - self.width
-            else:
-                if self.rect.colliderect(block):
-                    if self.rect.right > block.left and self.rect.left < block.right:
-                        if self.facing_left:
-                            self.x = block.right
+        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks']:
+            if hasattr(current_world, attr):
+                if attr == 'moving_blocks':
+                    for block in [b[0] for b in getattr(current_world, attr)]:
+                        if self.rect.colliderect(block):
+                            if self.rect.right > block.left and self.rect.left < block.right:
+                                if self.facing_left:
+                                    self.x = block.right
+                                else:
+                                    self.x = block.left - self.width
+                else:
+                    for block in getattr(current_world, attr):
+                        if isinstance(block, list):
+                            for b in block:
+                                if self.rect.colliderect(b):
+                                    if self.rect.bottom > b.top and self.rect.top < b.bottom:
+                                        if self.facing_left:
+                                            self.x = b.right
+                                        else:
+                                            self.x = b.left - self.width
                         else:
-                            self.x = block.left - self.width
+                            if self.rect.colliderect(block):
+                                if self.rect.right > block.left and self.rect.left < block.right:
+                                    if self.facing_left:
+                                        self.x = block.right
+                                    else:
+                                        self.x = block.left - self.width
         if world == 0:
             if player.x < 0:
                 player.x = 0
