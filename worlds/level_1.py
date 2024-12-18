@@ -15,7 +15,7 @@ class Level1:
 
     def __init__(self):
         self.bg_color = (0, 0, 0)
-        self.worlds = [self.World1(), self.World2()]
+        self.worlds = [self.World1(), self.World2(), self.World3()]
         self.background_surface = pygame.Surface((WIDTH, HEIGHT))
         self.background_spritesheet = pygame.image.load('assets/worlds/background/Dungeon_brick_wall_blue.png.png')
         self.background_sprite = pygame.transform.scale(self.background_spritesheet.subsurface(pygame.Rect(0, 0, 1920, 1080)), (WIDTH, HEIGHT))
@@ -52,6 +52,12 @@ class Level1:
 
     class World1:
         def __init__(self):
+            self.start_y = HEIGHT // 2 + 200 # The y-coordinate where the player will be teleported when the world is loaded
+            self.end_y = HEIGHT // 2 + 220 # The y-coordinate where the player will be teleported when coming back from a future level
+
+            # IMPORTANT NOTE: The coordinates above are calculated using the y of the first
+            # line of blocks in the world - the height of the player rect
+
             self.blocks_sprites = Level1.block_sprites # This is a list of block sprites
             self.spikes_sprites = Level1.spikes_sprites
             self.blocks = [
@@ -118,6 +124,9 @@ class Level1:
 
     class World2:
         def __init__(self):
+            self.start_y = HEIGHT // 2 + 220 # The y-coordinate where the player will be teleported when the world is loaded
+            self.end_y = HEIGHT // 2 + 60 # The y-coordinate where the player will be teleported when coming back from a future level
+
             self.blocks = [
                 [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 300, 50) for y in range(260, HEIGHT, 50)],
                 [pygame.Rect(x, HEIGHT // 2 + 50, 50, 50) for x in range(100, 201, 50)],
@@ -146,11 +155,8 @@ class Level1:
 
             self.fireballs = [
                 pygame.Rect(random.randint(300, WIDTH -350), HEIGHT // 2 + 100, 35, 50),
+                pygame.Rect(random.randint(300, WIDTH - 350), HEIGHT // 2 + 100, 35, 50),
                 pygame.Rect(random.randint(300, WIDTH - 350), HEIGHT // 2 + 100, 35, 50)
-            ]
-
-            self.barrier_blocks = [
-                [pygame.Rect(WIDTH - 320, y, 50, 50) for y in range(HEIGHT // 2 + 50, HEIGHT // 2 - 300, -50)]
             ]
 
         def draw(self):
@@ -215,17 +221,6 @@ class Level1:
                 screen.blit(sprite, sprite_rect.topleft)
                 pygame.draw.rect(screen, (255, 0, 0), fireball, 2)
 
-        def draw_troll_barrier(self):
-            for block in self.barrier_blocks:
-                if isinstance(block, list):
-                    for b in block:
-                        pygame.draw.rect(screen, (0, 255, 0), b)
-                        screen.blit(Level1.block_sprites[0], (b.x, b.y))
-                else:
-                    pygame.draw.rect(screen, (0, 255, 0), block)
-                    screen.blit(Level1.block_sprites[0], (block.x, block.y))
-
-
         def shake_block(self, block):
             if pygame.time.get_ticks() % 100 < 50:
                 block.x += 2
@@ -238,4 +233,63 @@ class Level1:
                 [pygame.Rect(550, HEIGHT // 2 + 100, 50, 50), 'down', True],
                 [pygame.Rect(700, HEIGHT // 2 + 100, 50, 50), 'down', True],
             ]
+
+    class World3:
+        def __init__(self):
+
+            self.start_y = HEIGHT // 2 + 220 # The y-coordinate where the player will be teleported when the world is loaded
+
+            self.blocks = [
+                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 250, 50) for y in range(260, HEIGHT, 50)],
+            ]
+
+            self.moving_blocks = [
+                [pygame.Rect(350, HEIGHT // 2 + 100, 50, 50), 'up'],
+                [pygame.Rect(450, HEIGHT // 3 + 100, 50, 50), 'right'],
+                [pygame.Rect(WIDTH // 3 + 200, HEIGHT // 3 + 100 , 50, 50), 'down']
+            ]
+
+
+        def draw(self):
+            for block in self.blocks:
+                if isinstance(block, list):
+                    for b in block:
+                        pygame.draw.rect(screen, (0, 255, 0), b)
+                        screen.blit(Level1.block_sprites[0], (b.x, b.y))
+                else:
+                    pygame.draw.rect(screen, (0, 255, 0), block)
+                    screen.blit(Level1.block_sprites[0], (block.x, block.y))
+            for i in range(len(self.moving_blocks)):
+                pygame.draw.rect(screen, (0, 0, 255), self.moving_blocks[i][0])
+                screen.blit(Level1.block_sprites[0], (self.moving_blocks[i][0].x, self.moving_blocks[i][0].y))
+                match i:
+                    case 0:
+                        if self.moving_blocks[i][1] == 'down':
+                            self.moving_blocks[i][0].y += 3
+                        if self.moving_blocks[i][0].y > HEIGHT // 2 + 260:
+                            self.moving_blocks[i][1] = 'up'
+                        if self.moving_blocks[i][1] == 'up':
+                            self.moving_blocks[i][0].y -= 3
+                        if self.moving_blocks[i][0].y < HEIGHT // 3 + 100:
+                            self.moving_blocks[i][1] = 'down'
+                    case 1:
+                        if self.moving_blocks[i][1] == 'right':
+                            self.moving_blocks[i][0].x += 3
+                        if self.moving_blocks[i][0].x > WIDTH // 3 + 100:
+                            self.moving_blocks[i][1] = 'left'
+                        if self.moving_blocks[i][1] == 'left':
+                            self.moving_blocks[i][0].x -= 3
+                        if self.moving_blocks[i][0].x < 450:
+                            self.moving_blocks[i][1] = 'right'
+                    case 2:
+                        if self.moving_blocks[i][1] == 'down':
+                            self.moving_blocks[i][0].y += 3
+                        if self.moving_blocks[i][0].y > HEIGHT // 2 + 260:
+                            self.moving_blocks[i][1] = 'up'
+                        if self.moving_blocks[i][1] == 'up':
+                            self.moving_blocks[i][0].y -= 3
+                        if self.moving_blocks[i][0].y < HEIGHT // 3 + 100:
+                            self.moving_blocks[i][1] = 'down'
+
+
 

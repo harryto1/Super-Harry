@@ -122,20 +122,22 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         # Check for horizontal collisions
-        for attr in ['blocks', 'barrier_blocks', 'visible_blocks']:
+        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks']:
             if hasattr(current_world, attr):
                 for block in getattr(current_world, attr):
+                    if attr == 'moving_blocks':
+                        block = block[0]
                     if isinstance(block, list):
                         for b in block:
                             if self.rect.colliderect(b):
-                                if self.rect.bottom > b.top and self.rect.top < b.bottom:
+                                if self.rect.bottom > b.top and self.rect.top < b.bottom and self.block_beneath != b:
                                     if self.facing_left:
                                         self.x = b.right
                                     else:
                                         self.x = b.left - self.width
                     else:
                         if self.rect.colliderect(block):
-                            if self.rect.right > block.left and self.rect.left < block.right:
+                            if self.rect.right > block.left and self.rect.left < block.right and self.block_beneath != block:
                                 if self.facing_left:
                                     self.x = block.right
                                 else:
@@ -147,15 +149,8 @@ class Player:
             if player.x < 0:
                 world -= 1
                 current_world = current_level.worlds[world]
-                player.x = WIDTH - 50
-                for block in current_world.blocks:
-                    if isinstance(block, list):
-                        for b in block:
-                            if b.x == player.x:
-                                player.y = b.y - player.height
-                    else:
-                        if block.x == player.x:
-                            player.y = block.y - player.height
+                player.x = WIDTH - 75
+                player.y = current_world.end_y
 
 
         # Update the player's rectangle position again after collision adjustment
@@ -336,14 +331,7 @@ class Player:
             world += 1
             current_world = current_level.worlds[world]
             self.x = 25
-            for block in current_world.blocks:
-                if isinstance(block, list):
-                    for b in block:
-                        if b.x == self.x:
-                            self.y = b.y - self.height + 10
-                else:
-                    if block.x == self.x:
-                        self.y = block.y - self.height + 10
+            self.y = current_world.start_y
             self.jumping = False
             self.jump_velocity = 0
 
@@ -397,7 +385,7 @@ menu = Menu(GRAY, menu_items)
 selected = menu.run()
 a_or_d = False # Check if the player pressed A or D
 space_instructions_done = False # Check if the player pressed SPACE
-world = 1
+world = 0
 level = 0
 if selected == 1:
     sys.exit()
@@ -419,10 +407,10 @@ elif selected == 0:
             if level1.space_instructions(player):
                 space_instructions_done = True
         player.check_for_new_world()
-        keys = pygame.key.get_pressed()
-        player.update_position(keys)
         player.gravity()
         player.check_if_on_block()
+        keys = pygame.key.get_pressed()
+        player.update_position(keys)
         current_world.draw()
         player.draw_hearts()
         player.events()
