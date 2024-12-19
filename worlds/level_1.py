@@ -3,6 +3,7 @@ import random
 import pygame.time
 
 from constants.constants import *
+from worlds.objects.door_key import DoorKey
 
 
 
@@ -11,6 +12,9 @@ class Level1:
     spikes_sprites = []
     lava_sprites = []
     fireball_sprites = []
+    door_sprite = []
+    unlocked_door_sprite = []
+    key_sprite = pygame.transform.scale(pygame.image.load('assets/worlds/objects/door_key_1.png'), (50, 50))
     bonus_hearts_sprite = pygame.transform.scale(pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png'), (35, 35))
 
     def __init__(self):
@@ -23,6 +27,7 @@ class Level1:
         self.spikes_spritesheet = pygame.image.load('assets/worlds/enemies/16-bit-spike-Sheet.png')
         self.lava_spritesheet = pygame.image.load('assets/worlds/enemies/spritesheet-burninglava.png')
         self.fireball_spritesheet = pygame.image.load('assets/worlds/enemies/Firebolt SpriteSheet.png')
+        self.door_spritesheet = pygame.image.load('assets/worlds/background/Tiles.png')
         for i in range(5):
             sprite = self.block_spritesheet.subsurface(pygame.Rect(i * 32, 0, 32, 32))
             sprite = pygame.transform.scale(sprite, (50, 50))
@@ -41,6 +46,12 @@ class Level1:
             sprite = pygame.transform.rotate(sprite, 90)
             sprite = pygame.transform.scale(sprite, (100, 100))
             self.fireball_sprites.append(sprite)
+        door_sprite = self.door_spritesheet.subsurface(pygame.Rect(0, 115, 32, 44))
+        door_sprite = pygame.transform.scale(door_sprite, (50, 100))
+        self.door_sprite.append(door_sprite)
+        unlocked_door_sprite = self.door_spritesheet.subsurface(pygame.Rect(0, 159, 32, 44))
+        unlocked_door_sprite = pygame.transform.scale(unlocked_door_sprite, (50, 100))
+        self.unlocked_door_sprite.append(unlocked_door_sprite)
 
 
     def draw_background_once(self):
@@ -243,13 +254,24 @@ class Level1:
             self.start_y = HEIGHT // 2 + 220 # The y-coordinate where the player will be teleported when the world is loaded
 
             self.blocks = [
-                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 250, 50) for y in range(260, HEIGHT, 50)],
+                [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 250, 50) for y in range(260, HEIGHT, 50)], # Start blocks
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 200, WIDTH + 1, 50) for y in range(HEIGHT // 3, HEIGHT, 50)], # End blocks
+                [pygame.Rect(x, HEIGHT // 3, 50, 50) for x in range(500, WIDTH - 200, 50)] # Debug Blocks
             ]
 
             self.moving_blocks = [
                 [pygame.Rect(350, HEIGHT // 2 + 100, 50, 50), 'up'],
                 [pygame.Rect(450, HEIGHT // 3 + 100, 50, 50), 'right'],
-                [pygame.Rect(WIDTH // 3 + 200, HEIGHT // 3 + 100 , 50, 50), 'down']
+                [pygame.Rect(WIDTH // 3 + 200, HEIGHT // 3 + 100 , 50, 50), 'down'],
+                [pygame.Rect(WIDTH // 3 + 100, HEIGHT // 2 + 260 , 50, 50), 'left']
+            ]
+
+            self.doors = [
+                [pygame.Rect(WIDTH - 50, HEIGHT // 3 - 100, 50, 100), 'locked']
+            ]
+
+            self.objects = [
+                DoorKey('door_key_1', self.doors[0], Level1.key_sprite)
             ]
 
 
@@ -262,6 +284,19 @@ class Level1:
                 else:
                     pygame.draw.rect(screen, (0, 255, 0), block)
                     screen.blit(Level1.block_sprites[0], (block.x, block.y))
+
+            for door in self.doors:
+                if door[1] == 'unlocked':
+                    pygame.draw.rect(screen, (255, 0, 0), door[0], 2)
+                    screen.blit(Level1.unlocked_door_sprite[0], (door[0].x, door[0].y))
+                else:
+                    pygame.draw.rect(screen, (255, 0, 0), door[0], 2)
+                    screen.blit(Level1.door_sprite[0], (door[0].x, door[0].y))
+
+            for obj in self.objects:
+                if not obj.in_inventory:
+                    obj.draw()
+
             for i in range(len(self.moving_blocks)):
                 pygame.draw.rect(screen, (0, 0, 255), self.moving_blocks[i][0])
                 screen.blit(Level1.block_sprites[0], (self.moving_blocks[i][0].x, self.moving_blocks[i][0].y))
@@ -293,6 +328,16 @@ class Level1:
                             self.moving_blocks[i][0].y -= 3
                         if self.moving_blocks[i][0].y < HEIGHT // 3 + 100:
                             self.moving_blocks[i][1] = 'down'
+                    case 3:
+                        if self.moving_blocks[i][1] == 'left':
+                            self.moving_blocks[i][0].x -= 3
+                        if self.moving_blocks[i][0].x < WIDTH // 3 - 50:
+                            self.moving_blocks[i][1] = 'right'
+                        if self.moving_blocks[i][1] == 'right':
+                            self.moving_blocks[i][0].x += 3
+                        if self.moving_blocks[i][0].x > WIDTH // 3 + 100:
+                            self.moving_blocks[i][1] = 'left'
+
 
 
 

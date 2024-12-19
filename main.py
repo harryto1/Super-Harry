@@ -16,6 +16,7 @@ class Player:
         self.block_beneath = None
         self.x = 100
         self.y = HEIGHT // 2 + 200
+        self.inventory = []
         self.width = 35  # Rect width
         self.height = 40  # Rect height
         self.sprite_width = 200  # Sprite width
@@ -122,11 +123,16 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         # Check for horizontal collisions
-        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks']:
+        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
             if hasattr(current_world, attr):
                 for block in getattr(current_world, attr):
                     if attr == 'moving_blocks':
                         block = block[0]
+                    if attr == 'doors':
+                        if block[1] == 'locked':
+                            block = block[0]
+                        else:
+                            break # Prevent collision with unlocked doors
                     if isinstance(block, list):
                         for b in block:
                             if self.rect.colliderect(b):
@@ -201,7 +207,6 @@ class Player:
 
         else:
             self.jumping = True  # Player starts falling if not above a block
-
 
     def gravity(self):
         blocks = []
@@ -311,12 +316,26 @@ class Player:
     def draw_hitbox(self):
         pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)
 
-    def draw_hearts(self):
+    def _draw_hearts(self):
         hearts_rects = [
             pygame.Rect(10 + i * 40, 10, 30, 30) for i in range(self.health)
         ]
         for heart_rect in hearts_rects:
             screen.blit(pygame.transform.scale(self.heart, (30, 30)), heart_rect)
+
+    def _draw_inventory(self):
+        objects_rects = [
+            pygame.Rect(10 + i * 40, 50, 30, 30) for i in range(len(self.inventory))
+        ]
+        for obj_rect in objects_rects:
+            for obj in self.inventory:
+                screen.blit(pygame.transform.scale(obj.key_sprite, (50, 50)), obj_rect)
+
+    def draw_UI(self):
+        self._draw_hearts()
+        self._draw_inventory()
+
+
 
     def events(self):
         if level == 0:
@@ -324,6 +343,8 @@ class Player:
                 level1.world1_events(player, current_world)
             if world == 1:
                 level1.world2_events(player, current_world)
+            if world == 2:
+                level1.world3_events(player, current_world)
 
     def check_for_new_world(self):
         global world, current_world
@@ -372,6 +393,24 @@ class Player:
                         pygame.Rect(WIDTH - 150, -50, 50, 50),
                     ]
 
+    def _pick_up_object(self):
+        if hasattr(current_world, 'objects'):
+            for obj in current_world.objects:
+                if self.rect.colliderect(obj.rect):
+                    in_inventory = False
+                    for inv_obj in self.inventory:
+                        if inv_obj.id == obj.id:
+                            in_inventory = True
+                            break
+                    if not in_inventory:
+                        obj.in_inventory = True
+                        self.inventory.append(obj)
+
+    def interactions(self):
+        self._pick_up_object()
+
+
+
 
 
 print(f'Created player object in {time.time() - initial_time} seconds')
@@ -385,7 +424,7 @@ menu = Menu(GRAY, menu_items)
 selected = menu.run()
 a_or_d = False # Check if the player pressed A or D
 space_instructions_done = False # Check if the player pressed SPACE
-world = 0
+world = 2
 level = 0
 if selected == 1:
     sys.exit()
@@ -412,7 +451,8 @@ elif selected == 0:
         keys = pygame.key.get_pressed()
         player.update_position(keys)
         current_world.draw()
-        player.draw_hearts()
+        player.draw_UI()
+        player.interactions()
         player.events()
         player.check_dead()
         player.check_0_health()
@@ -433,4 +473,3 @@ elif selected == 0:
 
 # Ideas:
 # Boss Fight
-# when reaching the end of world 2 add a barrier to troll the player lol
