@@ -146,7 +146,7 @@ class Level1:
             self.visible_blocks = self.disappearing_blocks[0]
 
             self.lava = [
-                [pygame.Rect(x, y, 50, 50) for x in range(300, WIDTH - 350, 50) for y in range(HEIGHT, HEIGHT + 800, 50)]
+                [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH, 50) for y in range(HEIGHT, HEIGHT + HEIGHT // 2, 50)]
             ]
 
             self.bonus_hearts = [
@@ -160,14 +160,6 @@ class Level1:
             ]
 
         def draw(self):
-            for block in self.blocks:
-                if isinstance(block, list):
-                    for b in block:
-                        pygame.draw.rect(screen, (0, 255, 0), b)
-                        screen.blit(Level1.block_sprites[0], (b.x, b.y))
-                else:
-                    pygame.draw.rect(screen, (0, 255, 0), block)
-                    screen.blit(Level1.block_sprites[0], (block.x, block.y))
             for block in self.moving_blocks:
                 pygame.draw.rect(screen, (0, 0, 255), block[0])
                 screen.blit(Level1.block_sprites[0], (block[0].x, block[0].y))
@@ -180,10 +172,6 @@ class Level1:
                 if block[0].y < HEIGHT // 2 + 150:
                     block[1] = 'down'
 
-            for block in self.visible_blocks:
-                pygame.draw.rect(screen, (0, 255, 0), block)
-                screen.blit(Level1.block_sprites[0], (block.x, block.y))
-
             for lava in self.lava:
                 current_time = pygame.time.get_ticks()
                 if isinstance(lava, list):
@@ -191,14 +179,29 @@ class Level1:
                         sprite_index = (current_time // 100) % len(Level1.lava_sprites)
                         screen.blit(Level1.lava_sprites[sprite_index], (l.x, l.y))
                         if current_time % 1000 < 50:
-                            if lava[0].y > HEIGHT // 2 + 260:
+                            if lava[0].y > HEIGHT // 2:
                                 l.y -= 2
                 else:
                     sprite_index = (current_time // 100) % len(Level1.lava_sprites)
                     screen.blit(Level1.lava_sprites[sprite_index], (lava.x, lava.y))
                     if current_time % 1000 < 50:
-                        if lava.y > HEIGHT // 2 + 260:
+                        if lava.y > HEIGHT // 2:
                             lava.y -= 2
+
+            for block in self.blocks:
+                if isinstance(block, list):
+                    for b in block:
+                        pygame.draw.rect(screen, (0, 255, 0), b)
+                        screen.blit(Level1.block_sprites[0], (b.x, b.y))
+                else:
+                    pygame.draw.rect(screen, (0, 255, 0), block)
+                    screen.blit(Level1.block_sprites[0], (block.x, block.y))
+
+            for block in self.visible_blocks:
+                pygame.draw.rect(screen, (0, 255, 0), block)
+                screen.blit(Level1.block_sprites[0], (block.x, block.y))
+
+
             for heart in self.bonus_hearts:
                 if heart[1]:
                     pygame.draw.rect(screen, (255, 0, 0), heart[0], 2)
