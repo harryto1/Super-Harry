@@ -329,7 +329,10 @@ class Player:
         ]
         for obj_rect in objects_rects:
             for obj in self.inventory:
-                screen.blit(pygame.transform.scale(obj.key_sprite, (50, 50)), obj_rect)
+                if isinstance(obj.key_sprite, list):
+                    screen.blit(pygame.transform.scale(obj.key_sprite[0], (50, 50)), obj_rect)
+                else:
+                    screen.blit(pygame.transform.scale(obj.key_sprite, (50, 50)), obj_rect)
 
     def draw_UI(self):
         self._draw_hearts()

@@ -126,14 +126,16 @@ def world2_events(player, current_world):
             screen.blit(text, text_rect)
             current_world.bonus_hearts.remove(bonus_heart)
 
+door_unlocked = False # This will be set to True when the player unlocks the door
 def world3_events(player, current_world):
     if player.x > WIDTH - 200:
+        global door_unlocked
+        if len(player.inventory) == 0 and not door_unlocked:
+            text = pygame.font.Font('assets/font/Monocraft.ttf', 36).render('You need a key to unlock this door!', True, (255, 0, 0))
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
+            screen.blit(text, text_rect)
         for obj in player.inventory:
-            if 'door_key_1' != obj.id or len(player.inventory) == 0:
-                text = pygame.font.Font('assets/font/Monocraft.ttf', 36).render('You need a key to unlock this door!', True, (255, 0, 0))
-                text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
-                screen.blit(text, text_rect)
-            elif 'door_key_1' == obj.id:
+            if 'door_key_1' == obj.id:
                 text = pygame.font.Font('assets/font/Monocraft.ttf', 36).render('Press E to unlock the door!', True, (0, 255, 0))
                 text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
                 screen.blit(text, text_rect)
@@ -141,6 +143,8 @@ def world3_events(player, current_world):
                 if keys_pressed[pygame.K_e]:
                     current_world.doors[0][1] = 'unlocked'
                     player.inventory.remove(obj)
+                    door_unlocked = True
+
 
 
 

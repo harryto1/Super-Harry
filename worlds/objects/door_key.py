@@ -10,4 +10,8 @@ class DoorKey:
         self.in_inventory = False # This will be set to True when the player picks up the key
 
     def draw(self):
-        screen.blit(self.key_sprite, self.rect)
+        if isinstance(self.key_sprite, list):
+            current_sprite = self.key_sprite[pygame.time.get_ticks() // 500 % len(self.key_sprite)]
+            screen.blit(current_sprite, self.rect)
+        else:
+            screen.blit(self.key_sprite, self.rect)

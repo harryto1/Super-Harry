@@ -14,7 +14,10 @@ class Level1:
     fireball_sprites = []
     door_sprite = []
     unlocked_door_sprite = []
-    key_sprite = pygame.transform.scale(pygame.image.load('assets/worlds/objects/door_key_1.png'), (50, 50))
+    key_sprites = [
+        pygame.transform.scale(pygame.image.load('assets/worlds/objects/door_key_1.png'), (50, 50)),
+        pygame.transform.scale(pygame.image.load('assets/worlds/objects/door_key_1(2).png'), (50, 50))
+        ]
     bonus_hearts_sprite = pygame.transform.scale(pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png'), (35, 35))
 
     def __init__(self):
@@ -271,7 +274,7 @@ class Level1:
             ]
 
             self.objects = [
-                DoorKey('door_key_1', self.doors[0], Level1.key_sprite)
+                DoorKey('door_key_1', self.doors[0], Level1.key_sprites)
             ]
 
 
