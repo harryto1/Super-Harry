@@ -259,14 +259,23 @@ class Level1:
             self.blocks = [
                 [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 250, 50) for y in range(260, HEIGHT, 50)], # Start blocks
                 [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 200, WIDTH + 1, 50) for y in range(HEIGHT // 3, HEIGHT, 50)], # End blocks
-                [pygame.Rect(x, HEIGHT // 3, 50, 50) for x in range(500, WIDTH - 200, 50)] # Debug Blocks
+                [pygame.Rect(x, y, 50, 50) for x in range(0, 250, 50) for y in range(0, HEIGHT // 2 + 100, 50)],
+                [pygame.Rect(400, y, 50, 50) for y in range(0, HEIGHT - 200, 50)],
+                pygame.Rect(250, HEIGHT // 3 - 50, 50, 50), # Block above inverted spike
+                pygame.Rect(350, HEIGHT // 4 - 150, 50, 50), # Block above inverted spike
+                pygame.Rect(300, HEIGHT // 4 - 150, 50, 50), # Block above inverted spike
+                pygame.Rect(350, HEIGHT // 2 - 100, 50, 50), # Block above bonus heart
+                [pygame.Rect(x, HEIGHT - 250, 50, 50) for x in range(450, WIDTH - 400, 50)],
+                pygame.Rect(650, HEIGHT - 25, 50, 50) # Block under spike
             ]
 
             self.moving_blocks = [
-                [pygame.Rect(350, HEIGHT // 2 + 100, 50, 50), 'up'],
-                [pygame.Rect(450, HEIGHT // 3 + 100, 50, 50), 'right'],
-                [pygame.Rect(WIDTH // 3 + 200, HEIGHT // 3 + 100 , 50, 50), 'down'],
-                [pygame.Rect(WIDTH // 3 + 100, HEIGHT // 2 + 260 , 50, 50), 'left']
+                [pygame.Rect(250, HEIGHT // 2 + 300, 50, 50), 'up'],
+                [pygame.Rect(300, HEIGHT // 2 + 300, 50, 50), 'up'],
+                [pygame.Rect(350, HEIGHT // 2 + 300, 50, 50), 'up'],
+                [pygame.Rect(450, HEIGHT - 25, 50, 50), 'right'],
+                [pygame.Rect(500, HEIGHT - 25, 50, 50), 'right'],
+                [pygame.Rect(550, HEIGHT - 25, 50, 50), 'right'],
             ]
 
             self.doors = [
@@ -275,6 +284,22 @@ class Level1:
 
             self.objects = [
                 DoorKey('door_key_1', self.doors[0], Level1.key_sprites)
+            ]
+
+            self.inverted_spikes = [
+                [pygame.Rect(x, 0, 50, 50) for x in range(250, 351, 50)],
+                pygame.Rect(250, HEIGHT // 3, 50, 50),
+                pygame.Rect(350, HEIGHT // 4 - 100, 50, 50),
+                pygame.Rect(300, HEIGHT // 4 - 100, 50, 50),
+                pygame.Rect(350, HEIGHT // 2 - 50, 50, 50)
+            ]
+
+            self.bonus_hearts = [
+                [pygame.Rect(300, 50, 50, 50), True]
+            ]
+
+            self.spikes = [
+                pygame.Rect(650, HEIGHT - 75, 50, 50)
             ]
 
 
@@ -300,46 +325,47 @@ class Level1:
                 if not obj.in_inventory:
                     obj.draw()
 
+            for inverted_spike in self.inverted_spikes:
+                if isinstance(inverted_spike, list):
+                    for inv_spike in inverted_spike:
+                        pygame.draw.rect(screen, (255, 0, 0), inv_spike, 2)
+                        screen.blit(Level1.spikes_sprites[2], (inv_spike.x, inv_spike.y))
+                else:
+                    pygame.draw.rect(screen, (255, 0, 0), inverted_spike, 2)
+                    screen.blit(Level1.spikes_sprites[2], (inverted_spike.x, inverted_spike.y))
+
+            for spike in self.spikes:
+                if isinstance(spike, list):
+                    for s in spike:
+                        pygame.draw.rect(screen, (255, 0, 0), s, 2)
+                        screen.blit(Level1.spikes_sprites[0], (s.x, s.y))
+                else:
+                    pygame.draw.rect(screen, (255, 0, 0), spike, 2)
+                    screen.blit(Level1.spikes_sprites[0], (spike.x, spike.y))
+
+            for heart in self.bonus_hearts:
+                if heart[1]:
+                    pygame.draw.rect(screen, (255, 0, 0), heart[0], 2)
+                    screen.blit(Level1.bonus_hearts_sprite, (
+                    heart[0].x + (heart[0].width - Level1.bonus_hearts_sprite.get_width()) // 2,
+                    heart[0].y + (heart[0].height - Level1.bonus_hearts_sprite.get_height()) // 2))
+
             for i in range(len(self.moving_blocks)):
                 pygame.draw.rect(screen, (0, 0, 255), self.moving_blocks[i][0])
                 screen.blit(Level1.block_sprites[0], (self.moving_blocks[i][0].x, self.moving_blocks[i][0].y))
                 match i:
-                    case 0:
+                    case 0 | 1 | 2:
                         if self.moving_blocks[i][1] == 'down':
                             self.moving_blocks[i][0].y += 3
-                        if self.moving_blocks[i][0].y > HEIGHT // 2 + 260:
+                        if self.moving_blocks[i][0].y > HEIGHT - 50:
                             self.moving_blocks[i][1] = 'up'
                         if self.moving_blocks[i][1] == 'up':
                             self.moving_blocks[i][0].y -= 3
-                        if self.moving_blocks[i][0].y < HEIGHT // 3 + 100:
+                        if self.moving_blocks[i][0].y < HEIGHT // 8:
                             self.moving_blocks[i][1] = 'down'
-                    case 1:
-                        if self.moving_blocks[i][1] == 'right':
-                            self.moving_blocks[i][0].x += 3
-                        if self.moving_blocks[i][0].x > WIDTH // 3 + 100:
-                            self.moving_blocks[i][1] = 'left'
-                        if self.moving_blocks[i][1] == 'left':
-                            self.moving_blocks[i][0].x -= 3
-                        if self.moving_blocks[i][0].x < 450:
-                            self.moving_blocks[i][1] = 'right'
-                    case 2:
-                        if self.moving_blocks[i][1] == 'down':
-                            self.moving_blocks[i][0].y += 3
-                        if self.moving_blocks[i][0].y > HEIGHT // 2 + 260:
-                            self.moving_blocks[i][1] = 'up'
-                        if self.moving_blocks[i][1] == 'up':
-                            self.moving_blocks[i][0].y -= 3
-                        if self.moving_blocks[i][0].y < HEIGHT // 3 + 100:
-                            self.moving_blocks[i][1] = 'down'
-                    case 3:
-                        if self.moving_blocks[i][1] == 'left':
-                            self.moving_blocks[i][0].x -= 3
-                        if self.moving_blocks[i][0].x < WIDTH // 3 - 50:
-                            self.moving_blocks[i][1] = 'right'
-                        if self.moving_blocks[i][1] == 'right':
-                            self.moving_blocks[i][0].x += 3
-                        if self.moving_blocks[i][0].x > WIDTH // 3 + 100:
-                            self.moving_blocks[i][1] = 'left'
+
+
+
 
 
 

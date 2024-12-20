@@ -127,7 +127,7 @@ def world2_events(player, current_world):
             current_world.bonus_hearts.remove(bonus_heart)
 
 door_unlocked = False # This will be set to True when the player unlocks the door
-def world3_events(player, current_world):
+def world3_events(player, current_world, current_level):
     if player.x > WIDTH - 200:
         global door_unlocked
         if len(player.inventory) == 0 and not door_unlocked:
@@ -144,6 +144,43 @@ def world3_events(player, current_world):
                     current_world.doors[0][1] = 'unlocked'
                     player.inventory.remove(obj)
                     door_unlocked = True
+
+
+    for bonus_heart in current_world.bonus_hearts:
+        if player.rect.colliderect(bonus_heart[0]):
+            bonus_heart[1] = False
+            player.health += 1
+            text = pygame.font.Font('assets/font/Monocraft.ttf', 36).render('+1', True, (0, 255, 0))
+            text_rect = text.get_rect(center=(bonus_heart[0].centerx, bonus_heart[0].centery - 50))
+            screen.blit(text, text_rect)
+            current_world.bonus_hearts.remove(bonus_heart)
+    if player.x > 450:
+        for i in range(len(current_world.moving_blocks)):
+            pygame.draw.rect(screen, (0, 0, 255), current_world.moving_blocks[i][0])
+            screen.blit(current_level.block_sprites[0], (current_world.moving_blocks[i][0].x, current_world.moving_blocks[i][0].y))
+            match i:
+                case 3 | 4 | 5:
+                    if current_world.moving_blocks[i][1] == 'right':
+                        current_world.moving_blocks[i][0].x += 3
+                    if current_world.moving_blocks[i][0].x > WIDTH - 250:
+                        current_world.moving_blocks[i][1] = 'left'
+                    if current_world.moving_blocks[i][1] == 'left':
+                        current_world.moving_blocks[i][0].x -= 3
+                    if current_world.moving_blocks[i][0].x < 400:
+                        current_world.moving_blocks[i][1] = 'right'
+    else:
+        for i in range(len(current_world.moving_blocks)):
+            pygame.draw.rect(screen, (0, 0, 255), current_world.moving_blocks[i][0])
+            screen.blit(current_level.block_sprites[0], (current_world.moving_blocks[i][0].x, current_world.moving_blocks[i][0].y))
+            match i:
+                case 3:
+                    current_world.moving_blocks[i][0].x = 400
+                case 4:
+                    current_world.moving_blocks[i][0].x = 450
+                case 5:
+                    current_world.moving_blocks[i][0].x = 500
+
+
 
 
 

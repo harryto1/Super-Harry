@@ -107,6 +107,8 @@ class Player:
     def update_position(self, keys):
         global world, current_world
         self.moving = False
+
+        # Handle horizontal movement
         if keys[pygame.K_a]:
             self.x -= self.speed
             self.moving = True
@@ -115,6 +117,8 @@ class Player:
             self.x += self.speed
             self.moving = True
             self.facing_left = False
+
+        # Handle jumping
         if keys[pygame.K_SPACE] and not self.jumping:
             self.jump_velocity = -15  # Initial jump velocity
             self.jumping = True
@@ -122,7 +126,7 @@ class Player:
         # Update the player's rectangle position
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-        # Check for horizontal collisions
+        # Horizontal collision handling
         for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
             if hasattr(current_world, attr):
                 for block in getattr(current_world, attr):
@@ -132,34 +136,61 @@ class Player:
                         if block[1] == 'locked':
                             block = block[0]
                         else:
-                            break # Prevent collision with unlocked doors
+                            continue  # Prevent collision with unlocked doors
                     if isinstance(block, list):
                         for b in block:
                             if self.rect.colliderect(b):
-                                if self.rect.bottom > b.top and self.rect.top < b.bottom and self.block_beneath != b:
-                                    if self.facing_left:
+                                if self.rect.bottom > b.top and self.rect.top < b.bottom:
+                                    if self.facing_left and self.rect.left < b.right and self.rect.right > b.left:
                                         self.x = b.right
-                                    else:
+                                    elif not self.facing_left and self.rect.right > b.left and self.rect.left < b.right:
                                         self.x = b.left - self.width
                     else:
                         if self.rect.colliderect(block):
-                            if self.rect.right > block.left and self.rect.left < block.right and self.block_beneath != block:
-                                if self.facing_left:
+                            if self.rect.bottom > block.top and self.rect.top < block.bottom:
+                                if self.facing_left and self.rect.left < block.right and self.rect.right > block.left:
                                     self.x = block.right
-                                else:
+                                elif not self.facing_left and self.rect.right > block.left and self.rect.left < block.right:
                                     self.x = block.left - self.width
+
+        # Update the player's rectangle position after horizontal collision adjustments
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+        # Vertical collision handling
+        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
+            if hasattr(current_world, attr):
+                for block in getattr(current_world, attr):
+                    if attr == 'moving_blocks':
+                        block = block[0]
+                    if attr == 'doors':
+                        if block[1] == 'locked':
+                            block = block[0]
+                        else:
+                            continue  # Prevent collision with unlocked doors
+                    if isinstance(block, list):
+                        for b in block:
+                            if self.rect.colliderect(b):
+                                if self.rect.top < b.bottom and self.rect.bottom > b.top and self.jump_velocity < 0:
+                                    self.y = b.bottom
+                                    self.jump_velocity = 0
+                    else:
+                        if self.rect.colliderect(block):
+                            if self.rect.top < block.bottom and self.rect.bottom > block.top and self.jump_velocity < 0:
+                                self.y = block.bottom
+                                self.jump_velocity = 0
+
+        # Adjust world boundaries
         if world == 0:
-            if player.x < 0:
-                player.x = 0
+            if self.x < 0:
+                self.x = 0
         else:
-            if player.x < 0:
+            if self.x < 0:
                 world -= 1
                 current_world = current_level.worlds[world]
-                player.x = WIDTH - 75
-                player.y = current_world.end_y
+                self.x = WIDTH - 75
+                self.y = current_world.end_y
 
-
-        # Update the player's rectangle position again after collision adjustment
+        # Update the player's rectangle position after all adjustments
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def check_if_on_block(self):
@@ -347,7 +378,7 @@ class Player:
             if world == 1:
                 level1.world2_events(player, current_world)
             if world == 2:
-                level1.world3_events(player, current_world)
+                level1.world3_events(player, current_world, current_level)
 
     def check_for_new_world(self):
         global world, current_world
