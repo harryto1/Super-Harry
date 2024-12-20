@@ -126,36 +126,6 @@ class Player:
         # Update the player's rectangle position
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-        # Horizontal collision handling
-        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
-            if hasattr(current_world, attr):
-                for block in getattr(current_world, attr):
-                    if attr == 'moving_blocks':
-                        block = block[0]
-                    if attr == 'doors':
-                        if block[1] == 'locked':
-                            block = block[0]
-                        else:
-                            continue  # Prevent collision with unlocked doors
-                    if isinstance(block, list):
-                        for b in block:
-                            if self.rect.colliderect(b):
-                                if self.rect.bottom > b.top and self.rect.top < b.bottom:
-                                    if self.facing_left and self.rect.left < b.right and self.rect.right > b.left:
-                                        self.x = b.right
-                                    elif not self.facing_left and self.rect.right > b.left and self.rect.left < b.right:
-                                        self.x = b.left - self.width
-                    else:
-                        if self.rect.colliderect(block):
-                            if self.rect.bottom > block.top and self.rect.top < block.bottom:
-                                if self.facing_left and self.rect.left < block.right and self.rect.right > block.left:
-                                    self.x = block.right
-                                elif not self.facing_left and self.rect.right > block.left and self.rect.left < block.right:
-                                    self.x = block.left - self.width
-
-        # Update the player's rectangle position after horizontal collision adjustments
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-
         # Vertical collision handling
         for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
             if hasattr(current_world, attr):
@@ -178,6 +148,36 @@ class Player:
                             if self.rect.top < block.bottom and self.rect.bottom > block.top and self.jump_velocity < 0:
                                 self.y = block.bottom
                                 self.jump_velocity = 0
+
+        # Update the player's rectangle position after horizontal collision adjustments
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+        # Horizontal collision handling
+        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
+            if hasattr(current_world, attr):
+                for block in getattr(current_world, attr):
+                    if attr == 'moving_blocks':
+                        block = block[0]
+                    if attr == 'doors':
+                        if block[1] == 'locked':
+                            block = block[0]
+                        else:
+                            continue  # Prevent collision with unlocked doors
+                    if isinstance(block, list):
+                        for b in block:
+                            if self.rect.colliderect(b):
+                                if self.rect.bottom > b.top and self.rect.top < b.bottom:
+                                    if self.facing_left and self.rect.left < b.right and self.rect.right > b.left:
+                                        self.x += self.speed
+                                    elif not self.facing_left and self.rect.right > b.left and self.rect.left < b.right:
+                                        self.x -= self.speed
+                    else:
+                        if self.rect.colliderect(block):
+                            if self.rect.bottom > block.top and self.rect.top < block.bottom:
+                                if self.facing_left and self.rect.left < block.right and self.rect.right > block.left:
+                                    self.x += self.speed
+                                elif not self.facing_left and self.rect.right > block.left and self.rect.left < block.right:
+                                    self.x -= self.speed
 
         # Adjust world boundaries
         if world == 0:
