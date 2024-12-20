@@ -127,7 +127,7 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         # Horizontal collision handling
-        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
+        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']: # Remove moving_blocks if bug gets too annoying
             if hasattr(current_world, attr):
                 for block in getattr(current_world, attr):
                     if attr == 'moving_blocks':
