@@ -127,6 +127,7 @@ def world2_events(player, current_world):
             current_world.bonus_hearts.remove(bonus_heart)
 
 door_unlocked = False # This will be set to True when the player unlocks the door
+troll_spike_1_activated = False # This will be set to True when the player reaches a certain point
 def world3_events(player, current_world, current_level):
     if player.x > WIDTH - 200:
         global door_unlocked
@@ -179,6 +180,32 @@ def world3_events(player, current_world, current_level):
                     current_world.moving_blocks[i][0].x = 450
                 case 5:
                     current_world.moving_blocks[i][0].x = 500
+    global troll_spike_1_activated
+    if player.x > WIDTH // 3 + WIDTH // 3 + 50:
+        troll_spike_1_activated = True
+    if troll_spike_1_activated:
+        for i in range(len(current_world.inverted_spikes)):
+            if i == 8:
+                if current_world.inverted_spikes[i].y < HEIGHT + 100:
+                    current_world.inverted_spikes[i].y += 10
+
+    if player.x > WIDTH - 410:
+        for i in range(len(current_world.moving_blocks)):
+            pygame.draw.rect(screen, (0, 0, 255), current_world.moving_blocks[i][0])
+            screen.blit(current_level.block_sprites[0], (current_world.moving_blocks[i][0].x, current_world.moving_blocks[i][0].y))
+            match i:
+                case 6 | 7 | 8:
+                    if current_world.moving_blocks[i][1] == 'up':
+                        current_world.moving_blocks[i][0].y -= 3
+                    if current_world.moving_blocks[i][0].y < 75:
+                        current_world.moving_blocks[i][1] = 'down'
+                    if current_world.moving_blocks[i][1] == 'down':
+                        current_world.moving_blocks[i][0].y += 3
+                    if current_world.moving_blocks[i][0].y > HEIGHT - 50:
+                        current_world.moving_blocks[i][1] = 'up'
+
+
+
 
 
 

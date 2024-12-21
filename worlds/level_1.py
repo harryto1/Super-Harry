@@ -266,7 +266,17 @@ class Level1:
                 pygame.Rect(300, HEIGHT // 4 - 150, 50, 50), # Block above inverted spike
                 pygame.Rect(350, HEIGHT // 2 - 100, 50, 50), # Block above bonus heart
                 [pygame.Rect(x, HEIGHT - 250, 50, 50) for x in range(450, WIDTH - 400, 50)],
-                pygame.Rect(650, HEIGHT - 25, 50, 50) # Block under spike
+                pygame.Rect(650, HEIGHT - 25, 50, 50), # Block under spike
+                pygame.Rect(750, HEIGHT - 200, 50, 50), # Block above spike
+                pygame.Rect(WIDTH // 2, HEIGHT - 200, 50, 50), # Block above spike
+                pygame.Rect(WIDTH // 2 - 50, HEIGHT - 200, 50, 50), # Block above spike
+                pygame.Rect(WIDTH // 2 + 100, HEIGHT - 25, 50, 50), # Block under spike
+                pygame.Rect(WIDTH // 3  + WIDTH // 3 - 100, HEIGHT - 25, 50, 50), # Block under spike
+                pygame.Rect(WIDTH // 3 + WIDTH // 3 - 65, HEIGHT - 25, 50, 50), # Block under spike
+                pygame.Rect(WIDTH // 3 + WIDTH // 3 + 100, HEIGHT - 200, 50, 50), # Block above spike
+                [pygame.Rect(WIDTH - 400, y, 50, 50) for y in range(150, HEIGHT - 200, 50)],
+                [pygame.Rect(x, 150, 50, 50) for x in range(450, WIDTH - 400, 50)]
+
             ]
 
             self.moving_blocks = [
@@ -276,6 +286,9 @@ class Level1:
                 [pygame.Rect(450, HEIGHT - 25, 50, 50), 'right'],
                 [pygame.Rect(500, HEIGHT - 25, 50, 50), 'right'],
                 [pygame.Rect(550, HEIGHT - 25, 50, 50), 'right'],
+                [pygame.Rect(WIDTH - 350, HEIGHT - 100, 50, 50), 'up'],
+                [pygame.Rect(WIDTH - 300, HEIGHT - 100, 50, 50), 'up'],
+                [pygame.Rect(WIDTH - 250, HEIGHT - 100, 50, 50), 'up'],
             ]
 
             self.doors = [
@@ -291,7 +304,11 @@ class Level1:
                 pygame.Rect(250, HEIGHT // 3, 50, 50),
                 pygame.Rect(350, HEIGHT // 4 - 100, 50, 50),
                 pygame.Rect(300, HEIGHT // 4 - 100, 50, 50),
-                pygame.Rect(350, HEIGHT // 2 - 50, 50, 50)
+                pygame.Rect(350, HEIGHT // 2 - 50, 50, 50),
+                pygame.Rect(750, HEIGHT - 150, 50, 50),
+                pygame.Rect(WIDTH // 2, HEIGHT - 150, 50, 50),
+                pygame.Rect(WIDTH // 2 - 50, HEIGHT - 150, 50, 50),
+                pygame.Rect(WIDTH // 3 + WIDTH // 3 + 100, HEIGHT - 150, 50, 50)
             ]
 
             self.bonus_hearts = [
@@ -299,7 +316,10 @@ class Level1:
             ]
 
             self.spikes = [
-                pygame.Rect(650, HEIGHT - 75, 50, 50)
+                pygame.Rect(650, HEIGHT - 75, 50, 50),
+                pygame.Rect(WIDTH // 2 + 100, HEIGHT - 75, 50, 50),
+                pygame.Rect(WIDTH // 3 + WIDTH // 3 - 100, HEIGHT - 75, 50, 50),
+                pygame.Rect(WIDTH // 3 + WIDTH // 3 - 65, HEIGHT - 75, 50, 50)
             ]
 
 
@@ -361,7 +381,7 @@ class Level1:
                             self.moving_blocks[i][1] = 'up'
                         if self.moving_blocks[i][1] == 'up':
                             self.moving_blocks[i][0].y -= 3
-                        if self.moving_blocks[i][0].y < HEIGHT // 8:
+                        if self.moving_blocks[i][0].y < HEIGHT // 10:
                             self.moving_blocks[i][1] = 'down'
 
 
