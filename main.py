@@ -322,14 +322,15 @@ class Player:
         if self.y > HEIGHT:
             self.y = HEIGHT - self.height
             self._handle_collision(animation_func)
-        for attr in ['spikes', 'special_spikes', 'inverted_spikes', 'lava', 'fireballs']:
+        for attr in ['spikes', 'special_spikes', 'inverted_spikes', 'lava', 'fireballs', 'left_spikes', 'right_spikes']:
             if hasattr(current_world, attr):
                 for obj in getattr(current_world, attr):
                     if isinstance(obj, list):
                         for sub_obj in obj:
-                            if self.rect.colliderect(sub_obj):
-                                self._handle_collision(animation_func)
-                                break # Prevent multiple collisions
+                            if isinstance(sub_obj, pygame.Rect):
+                                if self.rect.colliderect(sub_obj):
+                                    self._handle_collision(animation_func)
+                                    break # Prevent multiple collisions
                     elif self.rect.colliderect(obj):
                         self._handle_collision(animation_func)
                         break # Prevent multiple collisions

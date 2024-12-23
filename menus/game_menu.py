@@ -29,8 +29,8 @@ class PlayerNPC:
         self.frame_rate = 100  # milliseconds per frame
         self.facing_left = False
         self.moving = False
-        self.wandering = False
-        self.destination_x = None
+        self.wandering = True
+        self.destination_x = random.randint(50, WIDTH - 50)
 
 
     def draw_idle(self):

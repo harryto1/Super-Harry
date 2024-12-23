@@ -128,6 +128,9 @@ def world2_events(player, current_world):
 
 door_unlocked = False # This will be set to True when the player unlocks the door
 troll_spike_1_activated = False # This will be set to True when the player reaches a certain point
+falling_spike_1_activated = False # This will be set to True when the player reaches a certain point
+falling_spike_2_activated = False # This will be set to True when the player reaches a certain point
+falling_spike_3_activated = False # This will be set to True when the player reaches a certain point
 def world3_events(player, current_world, current_level):
     if player.x > WIDTH - 200:
         global door_unlocked
@@ -175,19 +178,24 @@ def world3_events(player, current_world, current_level):
             screen.blit(current_level.block_sprites[0], (current_world.moving_blocks[i][0].x, current_world.moving_blocks[i][0].y))
             match i:
                 case 3:
-                    current_world.moving_blocks[i][0].x = 400
+                    if current_world.moving_blocks[i][0].x > 400:
+                        current_world.moving_blocks[i][0].x -= 6
                 case 4:
-                    current_world.moving_blocks[i][0].x = 450
+                    if current_world.moving_blocks[i][0].x > 450:
+                        current_world.moving_blocks[i][0].x -= 6
                 case 5:
-                    current_world.moving_blocks[i][0].x = 500
+                    if current_world.moving_blocks[i][0].x > 500:
+                        current_world.moving_blocks[i][0].x -= 6
+
     global troll_spike_1_activated
     if player.x > WIDTH // 3 + WIDTH // 3 + 50:
         troll_spike_1_activated = True
     if troll_spike_1_activated:
-        for i in range(len(current_world.inverted_spikes)):
-            if i == 8:
-                if current_world.inverted_spikes[i].y < HEIGHT + 100:
-                    current_world.inverted_spikes[i].y += 10
+        for inverted_spike in current_world.inverted_spikes:
+            if isinstance(inverted_spike, list):
+                if inverted_spike[1] == 'troll_1':
+                    if inverted_spike[0].y < HEIGHT + 100:
+                        inverted_spike[0].y += 15
 
     if player.x > WIDTH - 410:
         for i in range(len(current_world.moving_blocks)):
@@ -203,6 +211,51 @@ def world3_events(player, current_world, current_level):
                         current_world.moving_blocks[i][0].y += 3
                     if current_world.moving_blocks[i][0].y > HEIGHT - 50:
                         current_world.moving_blocks[i][1] = 'up'
+    else:
+        for i in range(len(current_world.moving_blocks)):
+            pygame.draw.rect(screen, (0, 0, 255), current_world.moving_blocks[i][0])
+            screen.blit(current_level.block_sprites[0], (current_world.moving_blocks[i][0].x, current_world.moving_blocks[i][0].y))
+            match i:
+                case 6:
+                    if current_world.moving_blocks[i][0].y < HEIGHT - 100:
+                        current_world.moving_blocks[i][0].y += 3
+                case 7:
+                    if current_world.moving_blocks[i][0].y < HEIGHT - 100:
+                        current_world.moving_blocks[i][0].y += 3
+                case 8:
+                    if current_world.moving_blocks[i][0].y < HEIGHT - 100:
+                        current_world.moving_blocks[i][0].y += 3
+
+    global falling_spike_1_activated, falling_spike_2_activated, falling_spike_3_activated
+    if falling_spike_1_activated:
+        for inverted_spike in current_world.inverted_spikes:
+            if isinstance(inverted_spike, list):
+                if inverted_spike[1] == 'falling_spike_1':
+                    if inverted_spike[0].y < HEIGHT + 100:
+                        inverted_spike[0].y += 15
+
+    if falling_spike_2_activated:
+        for inverted_spike in current_world.inverted_spikes:
+            if isinstance(inverted_spike, list):
+                if inverted_spike[1] == 'falling_spike_2':
+                    if inverted_spike[0].y < HEIGHT + 100:
+                        inverted_spike[0].y += 15
+
+    if falling_spike_3_activated:
+        for inverted_spike in current_world.inverted_spikes:
+            if isinstance(inverted_spike, list):
+                if inverted_spike[1] == 'falling_spike_3':
+                    if inverted_spike[0].y < HEIGHT + 100:
+                        inverted_spike[0].y += 15
+
+    if player.x > WIDTH - 350 and player.y < HEIGHT - 500:
+        falling_spike_1_activated = True
+
+    if player.x > WIDTH - 350 and player.y < HEIGHT - 600:
+        falling_spike_2_activated = True
+
+    if player.x > WIDTH - 350 and player.y < HEIGHT - 700:
+        falling_spike_3_activated = True
 
 
 
