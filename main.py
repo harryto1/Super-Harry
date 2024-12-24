@@ -239,6 +239,20 @@ class Player:
         else:
             self.jumping = True  # Player starts falling if not above a block
 
+# This piece of code is in case I want the player to move along
+# the moving_block without having to press any key
+#
+#        if hasattr(current_world, 'moving_blocks'):
+#            if self.block_beneath in moving_blocks:
+#                for moving_block in current_world.moving_blocks:
+#                    if moving_block[0] == self.block_beneath:
+#                        if moving_block[1] == 'left':
+#                            self.x -= 3
+#                            break
+#                        elif moving_block[1] == 'right':
+#                            self.x += 3
+#                            break
+
     def gravity(self):
         blocks = []
         for block_group in current_world.blocks:
