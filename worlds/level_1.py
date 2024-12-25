@@ -298,7 +298,7 @@ class Level1:
             ]
 
             self.objects = [
-                DoorKey('door_key_1', self.doors[0], Level1.key_sprites)
+                DoorKey('door_key_1', self.doors[0], Level1.key_sprites, pygame.Rect(WIDTH //2, HEIGHT // 2, 50, 50))
             ]
 
             self.inverted_spikes = [
