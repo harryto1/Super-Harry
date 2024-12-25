@@ -301,6 +301,10 @@ class Level1:
                 DoorKey('door_key_1', self.doors[0], Level1.key_sprites, pygame.Rect(WIDTH //2, HEIGHT // 2, 50, 50))
             ]
 
+            self.lava = [
+                [pygame.Rect(x, y, 50, 50) for x in range(450, WIDTH // 2 -200, 50) for y in range(200, HEIGHT - 250, 50)]
+            ]
+
             self.inverted_spikes = [
                 [pygame.Rect(x, 0, 50, 50) for x in range(250, 351, 50)],
                 pygame.Rect(250, HEIGHT // 3, 50, 50),
@@ -419,6 +423,15 @@ class Level1:
                             self.moving_blocks[i][0].y -= 3
                         if self.moving_blocks[i][0].y < HEIGHT // 10:
                             self.moving_blocks[i][1] = 'down'
+            for lava in self.lava:
+                current_time = pygame.time.get_ticks()
+                if isinstance(lava, list):
+                    for l in lava:
+                        sprite_index = (current_time // 100) % len(Level1.lava_sprites)
+                        screen.blit(Level1.lava_sprites[sprite_index], (l.x, l.y))
+                else:
+                    sprite_index = (current_time // 100) % len(Level1.lava_sprites)
+                    screen.blit(Level1.lava_sprites[sprite_index], (lava.x, lava.y))
 
 
 
