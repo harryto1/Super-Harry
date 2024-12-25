@@ -256,6 +256,7 @@ class Level1:
         def __init__(self):
 
             self.start_y = HEIGHT // 2 + 220 # The y-coordinate where the player will be teleported when the world is loaded
+            self.end_y = HEIGHT // 3 - 40
 
             self.blocks = [
                 [pygame.Rect(x, HEIGHT // 2 + y, 50, 50) for x in range(0, 250, 50) for y in range(260, HEIGHT, 50)], # Start blocks
@@ -275,7 +276,8 @@ class Level1:
                 pygame.Rect(WIDTH // 3  + WIDTH // 3 - 100, HEIGHT - 25, 50, 50), # Block under spike
                 pygame.Rect(WIDTH // 3 + WIDTH // 3 + 100, HEIGHT - 200, 50, 50), # Block above spike
                 [pygame.Rect(WIDTH - 400, y, 50, 50) for y in range(150, HEIGHT - 200, 50)],
-                [pygame.Rect(x, 150, 50, 50) for x in range(450, WIDTH - 400, 50)]
+                [pygame.Rect(x, 150, 50, 50) for x in range(450, WIDTH - 400, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 200, WIDTH + 1, 50) for y in range(0, HEIGHT // 3 - 200, 50)]
 
             ]
 
@@ -334,6 +336,8 @@ class Level1:
                 pygame.Rect(WIDTH - 250, HEIGHT - 500, 50, 50),
                 pygame.Rect(WIDTH - 250, HEIGHT // 2 - 200, 50, 50)
             ]
+
+            self.restricted = False if self.doors[0][1] == 'unlocked' else True
 
 
         def draw(self):

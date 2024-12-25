@@ -397,13 +397,30 @@ class Player:
 
     def check_for_new_world(self):
         global world, current_world
-        if self.x > WIDTH:
-            world += 1
-            current_world = current_level.worlds[world]
-            self.x = 25
-            self.y = current_world.start_y
-            self.jumping = False
-            self.jump_velocity = 0
+        if hasattr(current_world, 'restricted'):
+            if not current_world.restricted:
+                if self.x > WIDTH:
+                    world += 1
+                    current_world = current_level.worlds[world]
+                    self.x = 25
+                    self.y = current_world.start_y
+                    self.jumping = False
+                    self.jump_velocity = 0
+            else:
+                if self.x > WIDTH:
+                    self.x = WIDTH - 100
+                    self.y = current_world.end_y
+                    self.jumping = False
+                    self.jump_velocity = 0
+
+        else:
+            if self.x > WIDTH:
+                world += 1
+                current_world =- current_level.worlds[world]
+                self.x = 25
+                self.y = current_world.start_y
+                self.jumping = False
+                self.jump_velocity = 0
 
     def check_0_health(self):
         global level, current_level, current_world, world
