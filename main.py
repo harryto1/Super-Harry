@@ -416,7 +416,7 @@ class Player:
         else:
             if self.x > WIDTH:
                 world += 1
-                current_world =- current_level.worlds[world]
+                current_world = current_level.worlds[world]
                 self.x = 25
                 self.y = current_world.start_y
                 self.jumping = False
