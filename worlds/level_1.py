@@ -276,11 +276,8 @@ class Level1:
                 pygame.Rect(WIDTH // 3  + WIDTH // 3 - 100, HEIGHT - 25, 50, 50), # Block under spike
                 pygame.Rect(WIDTH // 3 + WIDTH // 3 + 100, HEIGHT - 200, 50, 50), # Block above spike
                 [pygame.Rect(WIDTH - 400, y, 50, 50) for y in range(150, HEIGHT - 200, 50)],
-                [pygame.Rect(x, 150, 50, 50) for x in range(450, WIDTH // 2 - 90, 50)],
-                [pygame.Rect(x, 150, 50, 50) for x in range(WIDTH // 2 + 90, WIDTH - 400, 50)],
-                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 200, WIDTH + 1, 50) for y in range(0, HEIGHT // 3 - 200, 50)],
-                [pygame.Rect(WIDTH // 2 - 110, y, 50, 50) for y in range(200, HEIGHT - 250, 50)],
-                [pygame.Rect(WIDTH // 2 + 90, y, 50, 50) for y in range(200, HEIGHT - 250, 50)]
+                [pygame.Rect(x, 150, 50, 50) for x in range(600, WIDTH - 375, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 200, WIDTH + 1, 50) for y in range(0, HEIGHT // 3 - 200, 50)]
 
             ]
 
@@ -294,9 +291,9 @@ class Level1:
                 [pygame.Rect(WIDTH - 350, HEIGHT - 100, 50, 50), 'up'],
                 [pygame.Rect(WIDTH - 300, HEIGHT - 100, 50, 50), 'up'],
                 [pygame.Rect(WIDTH - 250, HEIGHT - 100, 50, 50), 'up'],
-                [pygame.Rect(WIDTH // 2 - 60, HEIGHT // 2, 50, 50), 'up'],
-                [pygame.Rect(WIDTH // 2 - 10, HEIGHT // 2, 50, 50), 'up'],
-                [pygame.Rect(WIDTH // 2 + 40, HEIGHT // 2, 50, 50), 'up']
+                [pygame.Rect(450, HEIGHT // 2, 50, 50), 'up'],
+                [pygame.Rect(500, HEIGHT // 2, 50, 50), 'up'],
+                [pygame.Rect(550, HEIGHT // 2, 50, 50), 'up']
             ]
 
             self.doors = [
@@ -305,11 +302,6 @@ class Level1:
 
             self.objects = [
                 DoorKey('door_key_1', self.doors[0], Level1.key_sprites, pygame.Rect(WIDTH //2 - 10, HEIGHT // 2, 50, 50))
-            ]
-
-            self.lava = [
-                [pygame.Rect(x, y, 50, 50) for x in range(450, WIDTH // 2 - 150, 50) for y in range(200, HEIGHT - 250, 50)],
-                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH // 2 + 140, WIDTH - 400, 50) for y in range(200, HEIGHT - 250, 50)]
             ]
 
             self.inverted_spikes = [
@@ -334,7 +326,8 @@ class Level1:
             self.spikes = [
                 pygame.Rect(650, HEIGHT - 75, 50, 50),
                 pygame.Rect(WIDTH // 2 + 100, HEIGHT - 75, 50, 50),
-                pygame.Rect(WIDTH // 3 + WIDTH // 3 - 100, HEIGHT - 75, 50, 50)
+                pygame.Rect(WIDTH // 3 + WIDTH // 3 - 100, HEIGHT - 75, 50, 50),
+                pygame.Rect(WIDTH - 620, 100, 50, 50)
             ]
 
             self.left_spikes = [
@@ -348,19 +341,26 @@ class Level1:
                 pygame.Rect(WIDTH - 250, HEIGHT // 2 - 200, 50, 50)
             ]
 
+            self.moving_spikes = [
+                [pygame.Rect(WIDTH - 570, 100, 50, 50), 'down']
+            ]
+
             self.restricted = False if self.doors[0][1] == 'unlocked' else True
 
 
         def draw(self):
-            for lava in self.lava:
-                current_time = pygame.time.get_ticks()
-                if isinstance(lava, list):
-                    for l in lava:
-                        sprite_index = (current_time // 100) % len(Level1.lava_sprites)
-                        screen.blit(Level1.lava_sprites[sprite_index], (l.x, l.y))
-                else:
-                    sprite_index = (current_time // 100) % len(Level1.lava_sprites)
-                    screen.blit(Level1.lava_sprites[sprite_index], (lava.x, lava.y))
+            for moving_spike in self.moving_spikes:
+                if moving_spike[0].y < 150:
+                    pygame.draw.rect(screen, (255, 0, 0), moving_spike[0], 2)
+                    screen.blit(Level1.spikes_sprites[0], (moving_spike[0].x, moving_spike[0].y))
+                if moving_spike[1] == 'down':
+                    moving_spike[0].y += 1
+                if moving_spike[0].y > 180:
+                    moving_spike[1] = 'up'
+                if moving_spike[1] == 'up':
+                    moving_spike[0].y -= 1
+                if moving_spike[0].y < 100:
+                    moving_spike[1] = 'down'
 
             for block in self.blocks:
                 if isinstance(block, list):

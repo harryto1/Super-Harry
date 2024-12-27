@@ -1,4 +1,7 @@
 import time
+
+import pygame
+
 initial_time = time.time()
 import sys
 from menus.game_menu import Menu
@@ -117,6 +120,10 @@ class Player:
             self.x += self.speed
             self.moving = True
             self.facing_left = False
+        # For testing purposes
+        if keys[pygame.K_SLASH]:
+            self.x = WIDTH - 100
+            self.y = current_world.end_y
 
         # Handle jumping
         if keys[pygame.K_SPACE] and not self.jumping:
@@ -336,7 +343,7 @@ class Player:
         if self.y > HEIGHT:
             self.y = HEIGHT - self.height
             self._handle_collision(animation_func)
-        for attr in ['spikes', 'special_spikes', 'inverted_spikes', 'lava', 'fireballs', 'left_spikes', 'right_spikes']:
+        for attr in ['spikes', 'special_spikes', 'inverted_spikes', 'lava', 'fireballs', 'left_spikes', 'right_spikes', 'moving_spikes']:
             if hasattr(current_world, attr):
                 for obj in getattr(current_world, attr):
                     if isinstance(obj, list):
