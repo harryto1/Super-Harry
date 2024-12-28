@@ -341,7 +341,10 @@ class Level1:
             ]
 
             self.moving_spikes = [
-                [pygame.Rect(WIDTH - 570, 100, 50, 50), 'down']
+                [pygame.Rect(WIDTH - 570, 100, 50, 50), 'down'],
+                [pygame.Rect(WIDTH // 2 - 60, 100, 50, 50), 'down'],
+                [pygame.Rect(WIDTH // 2 - 110, 150, 50, 50), 'up'],
+                [pygame.Rect(WIDTH // 2 - 160, 100, 50, 50), 'down']
             ]
 
             self.inverted_moving_spikes = [
