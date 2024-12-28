@@ -248,13 +248,13 @@ def world3_events(player, current_world, current_level):
                     if inverted_spike[0].y < HEIGHT + 100:
                         inverted_spike[0].y += 15
 
-    if player.x > WIDTH - 350 and player.y < HEIGHT - 500:
+    if player.x > WIDTH - 400 and player.y < HEIGHT - 500:
         falling_spike_1_activated = True
 
-    if player.x > WIDTH - 350 and player.y < HEIGHT - 600:
+    if player.x > WIDTH - 400 and player.y < HEIGHT - 600:
         falling_spike_2_activated = True
 
-    if player.x > WIDTH - 350 and player.y < HEIGHT - 700:
+    if player.x > WIDTH - 400 and player.y < HEIGHT - 700:
         falling_spike_3_activated = True
 
 
