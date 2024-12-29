@@ -132,4 +132,60 @@ class Menu:
             pygame.display.flip()
         return self.selected_item
 
+class LevelSelection:
+    def __init__(self):
+        self.screen = screen
+        self.bg_color = bg_color
+        self.title_font = pygame.font.Font('assets/font/Monocraft.ttf', 72)
+        self.font = pygame.font.Font('assets/font/Monocraft.ttf', 36)
+        self.font_color = GRAY
+        self.menu_items = ['Level 1', 'Level 2']
+        self.selected_item = 0
+        self.clock = pygame.time.Clock()
+        self.menu_loop = True
+
+    def draw(self):
+        self.screen.fill(self.bg_color)
+        title = self.title_font.render('Level Selection', 1, (255, 255, 255))
+        title_rect = title.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
+        self.screen.blit(title, title_rect)
+        block_width = 300
+        block_height = 250
+        spacing = 150
+        start_x = (WIDTH - (block_width + spacing) * len(self.menu_items) + spacing) // 2
+        y_position = HEIGHT // 2
+
+        for i, item in enumerate(self.menu_items):
+            block_x = start_x + i * (block_width + spacing)
+            if i == self.selected_item:
+                label = self.font.render(item, 1, (255, 255, 255))
+                pygame.draw.rect(self.screen, (255, 255, 255), (block_x, y_position, block_width, block_height), 2)
+            else:
+                pygame.draw.rect(self.screen, GRAY, (block_x, y_position, block_width, block_height), 2)
+                label = self.font.render(item, 1, self.font_color)
+            label_rect = label.get_rect(center=(block_x + block_width // 2, y_position + block_height + 20))
+            self.screen.blit(label, label_rect)
+
+
+    def run(self):
+        while self.menu_loop:
+            self.clock.tick(60)
+            self.draw()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        self.selected_item = (self.selected_item - 1) % len(self.menu_items)
+                    if event.key == pygame.K_RIGHT:
+                        self.selected_item = (self.selected_item + 1) % len(self.menu_items)
+                    if event.key == pygame.K_RETURN:
+                        self.menu_loop = False
+                    if event.key == pygame.K_ESCAPE:
+                        pause_selected = PauseMenu().run()
+                        if pause_selected == 1:
+                            sys.exit()
+
+            pygame.display.flip()
+        return self.selected_item
 
