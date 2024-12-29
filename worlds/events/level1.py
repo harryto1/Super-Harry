@@ -257,6 +257,49 @@ def world3_events(player, current_world, current_level):
     if player.x > WIDTH - 400 and player.y < HEIGHT - 700:
         falling_spike_3_activated = True
 
+RAINBOW_COLORS = [
+        (255, 0, 0),    # Red
+        (255, 127, 0),  # Orange
+        (255, 255, 0),  # Yellow
+        (0, 255, 0),    # Green
+        (0, 0, 255),    # Blue
+        (75, 0, 130),   # Indigo
+        (148, 0, 211)   # Violet
+    ]
+def level1_end(current_level):
+    screen.fill(BLACK)
+    current_level.draw_background_once()
+
+    def cycle_colors(colors):
+        return colors[1:] + [colors[0]]
+
+    def animate_text():
+        font = pygame.font.Font('assets/font/Monocraft.ttf', 72)
+        text = 'Congratulations!'
+        text_surfaces = [font.render(char, True, RAINBOW_COLORS[i % len(RAINBOW_COLORS)]) for i, char in enumerate(text)]
+        text_rects = [surface.get_rect() for surface in text_surfaces]
+        total_width = sum(rect.width for rect in text_rects)
+        start_x = (WIDTH - total_width) // 2
+        y = HEIGHT // 2 - 50
+
+        initial_time = pygame.time.get_ticks()
+        while pygame.time.get_ticks() - initial_time < 3000:
+            current_level.draw_background()
+            x = start_x
+            for surface, rect in zip(text_surfaces, text_rects):
+                rect.topleft = (x, y)
+                screen.blit(surface, rect)
+                x += rect.width
+            pygame.display.flip()
+            global RAINBOW_COLORS
+            RAINBOW_COLORS = cycle_colors(RAINBOW_COLORS)
+            text_surfaces = [font.render(char, True, RAINBOW_COLORS[i % len(RAINBOW_COLORS)]) for i, char in enumerate(text)]
+            pygame.time.wait(50)
+
+    animate_text()
+
+
+
 
 
 

@@ -407,6 +407,7 @@ class Player:
         level += 1
         match level:
             case 1:
+                level1.level1_end(current_level)
                 from worlds import level_2
                 from worlds.events import level2
                 current_level = level_2.Level2()
