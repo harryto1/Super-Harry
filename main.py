@@ -402,17 +402,39 @@ class Player:
             if world == 2:
                 level1.world3_events(player, current_world, current_level)
 
+    def new_level(self):
+        global level, current_level, world, current_world
+        level += 1
+        match level:
+            case 1:
+                from worlds import level_2
+                from worlds.events import level2
+                current_level = level_2.Level2()
+                world = 0
+                current_world = current_level.worlds[world]
+                level2.level2_start()
+                current_level.draw_background_once()
+                self.x = 25
+                self.y = current_world.start_y
+                self.jumping = False
+                self.jump_velocity = 0
+
+
+
     def check_for_new_world(self):
         global world, current_world
         if hasattr(current_world, 'restricted'):
             if not current_world.restricted:
                 if self.x > WIDTH:
-                    world += 1
-                    current_world = current_level.worlds[world]
-                    self.x = 25
-                    self.y = current_world.start_y
-                    self.jumping = False
-                    self.jump_velocity = 0
+                    if current_world == current_level.worlds[-1]:
+                        self.new_level()
+                    else:
+                        world += 1
+                        current_world = current_level.worlds[world]
+                        self.x = 25
+                        self.y = current_world.start_y
+                        self.jumping = False
+                        self.jump_velocity = 0
             else:
                 if self.x > WIDTH:
                     self.x = WIDTH - 100
@@ -422,12 +444,15 @@ class Player:
 
         else:
             if self.x > WIDTH:
-                world += 1
-                current_world = current_level.worlds[world]
-                self.x = 25
-                self.y = current_world.start_y
-                self.jumping = False
-                self.jump_velocity = 0
+                if current_world == current_level.worlds[-1]:
+                    self.new_level()
+                else:
+                    world += 1
+                    current_world = current_level.worlds[world]
+                    self.x = 25
+                    self.y = current_world.start_y
+                    self.jumping = False
+                    self.jump_velocity = 0
 
     def check_0_health(self):
         global level, current_level, current_world, world
