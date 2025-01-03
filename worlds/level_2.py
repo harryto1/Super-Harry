@@ -1,3 +1,4 @@
+import random
 
 import pygame.time
 
@@ -16,9 +17,9 @@ class Level2:
         ]
     bonus_hearts_sprite = pygame.transform.scale(pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png'), (35, 35))
 
-    def __init__(self):
+    def __init__(self, player):
         self.bg_color = (0, 0, 0)
-        self.worlds = [self.World1()]
+        self.worlds = [self.World1(player)]
         self.background_surface = pygame.Surface((WIDTH, HEIGHT))
         self.background_spritesheet = pygame.image.load('assets/worlds/background/Dungeon_brick_wall_blue.png.png')
         self.background_sprite = pygame.transform.scale(self.background_spritesheet.subsurface(pygame.Rect(0, 0, 1920, 1080)), (WIDTH, HEIGHT))
@@ -60,13 +61,199 @@ class Level2:
     def draw_background(self):
         screen.blit(self.background_surface, (0, 0))
 
+    class Enemy:
+        def __init__(self, x, y, speed, idle_spritesheet, motion_spritesheet, death_spritesheet, attack_spritesheet, player):
+            self.x = x
+            self.y = y
+            self.player = player
+            self.width = 35
+            self.height = 40
+            self.sprite_width = 200
+            self.sprite_height = 200
+            self.speed = speed
+            self.moving = False
+            self.facing_left = False
+            self.jumping = False
+            self.attacking = False
+            self.jump_velocity = 0
+            self.gravity_force = 1
+            self.idle_spritesheet = idle_spritesheet
+            self.motion_spritesheet = motion_spritesheet
+            self.death_spritesheet = death_spritesheet
+            self.attack_spritesheet = attack_spritesheet
+            self.idle_frame = 0
+            self.motion_frame = 0
+            self.last_update = pygame.time.get_ticks()
+            self.frame_rate = 100
+            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+        def draw_idle(self):
+            pass
+            # To override in subclasses
+
+        def draw_motion(self):
+            pass
+            # To override in subclasses
+
+        def draw_death(self):
+            pass
+            # To override in subclasses
+
+        def update_position(self):
+            pass
+
+
+    class Orc(Enemy):
+        def __init__(self, x, y, speed, idle_spritesheet, motion_spritesheet, death_spritesheet, attack_spritesheet, player):
+            super().__init__(x, y, speed, idle_spritesheet, motion_spritesheet, death_spritesheet, attack_spritesheet, player)
+            self.idle_sprites = []
+            for i in range(6):
+                sprite = idle_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
+                self.idle_sprites.append(sprite)
+            self.motion_sprites = []
+            for i in range(8):
+                sprite = motion_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
+                self.motion_sprites.append(sprite)
+            self.death_sprites = []
+            for i in range(4):
+                sprite = death_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
+                self.death_sprites.append(sprite)
+            self.attack_sprites = []
+            for i in range(6):
+                sprite = attack_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
+                self.attack_sprites.append(sprite)
+
+            self.attack_frame = 0
+            self.attack_last_update = pygame.time.get_ticks()
+            self.attack_frame_rate = 75
+
+            self.destination_x = self.player.x
+
+        def draw_hitbox(self):
+            pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
+
+        def draw_idle(self):
+            now = pygame.time.get_ticks()
+            if now - self.last_update > self.frame_rate:
+                self.last_update = now
+                self.idle_frame = (self.idle_frame + 1) % len(self.idle_sprites)
+            sprite = pygame.transform.scale(self.idle_sprites[self.idle_frame], (self.sprite_width, self.sprite_height))
+            if self.facing_left:
+                sprite = pygame.transform.flip(sprite, True, False)
+            screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
+                                 self.y - (self.sprite_height - self.height) + self.height + 45))
+            self.draw_hitbox()
+
+        def draw_motion(self):
+            if not self.motion_sprites:
+                return
+            now = pygame.time.get_ticks()
+            if now - self.last_update > self.frame_rate:
+                self.last_update = now
+                self.motion_frame = (self.motion_frame + 1) % len(self.motion_sprites)
+            sprite = pygame.transform.scale(self.motion_sprites[self.motion_frame], (self.sprite_width, self.sprite_height))
+            if self.facing_left:
+                sprite = pygame.transform.flip(sprite, True, False)
+            screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
+                                 self.y - (self.sprite_height - self.height) + self.height + 45))
+            self.draw_hitbox()
+
+        def draw_death(self):
+            if not self.death_sprites:
+                return
+            for i in range(4):
+                screen.fill(BLACK)
+                sprite = pygame.transform.scale(self.death_sprites[i], (self.sprite_width, self.sprite_height))
+                if self.facing_left:
+                    sprite = pygame.transform.flip(sprite, True, False)
+                screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
+                                     self.y - (self.sprite_height - self.height) + self.height + 45))
+                pygame.display.update()
+                pygame.time.wait(200)
+
+        def draw_attack(self):
+            now = pygame.time.get_ticks()
+            if now - self.attack_last_update > self.attack_frame_rate:
+                self.attack_last_update = now
+                self.attack_frame = (self.attack_frame + 1) % len(self.attack_sprites)
+                if self.attack_frame == 0:
+                    self.attacking = False  # Attack animation finished
+                if self.attack_frame == len(self.attack_sprites) - 2:
+                    if abs(self.x - self.player.x) < 50 and abs(self.y - self.player.y) < 50:
+                        if self.player.health > 1:
+                            self.player._handle_collision(self.player.draw_hurt_animation)
+                        else:
+                            self.player._handle_collision(self.player.draw_death_animation)
+            sprite = pygame.transform.scale(self.attack_sprites[self.attack_frame],
+                                            (self.sprite_width, self.sprite_height))
+            if self.facing_left:
+                sprite = pygame.transform.flip(sprite, True, False)
+            screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
+                                 self.y - (self.sprite_height - self.height) + self.height + 45))
+
+
+        def get_random_path(self):
+            self.destination_x = random.randint(50, WIDTH - 50)
+
+        def update_position(self):
+            if self.attacking:
+                self.draw_attack()
+                return
+
+            if abs(self.x - self.player.x) < 50 and abs(self.y - self.player.y) < 50:
+                self.attacking = True
+                self.attack_frame = 0
+                self.attack_last_update = pygame.time.get_ticks()
+                if self.x - self.player.x > 0:
+                    self.facing_left = True
+                else:
+                    self.facing_left = False
+                self.moving = False
+                self.draw_attack()
+                return
+
+            if not self.attacking:
+                if self.x < self.player.x:
+                    self.facing_left = False
+                    self.x += self.speed
+                elif self.x > self.player.x:
+                    self.facing_left = True
+                    self.x -= self.speed
+                if abs(self.x - self.destination_x) < self.speed:
+                    self.moving = False
+                    self.destination_x = self.player.x
+                else:
+                    self.moving = True
+            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+
+        def run(self):
+            self.update_position()
+            if self.moving:
+                self.draw_motion()
+            elif self.attacking:
+                self.draw_attack()
+            else:
+                self.draw_idle()
+
+
+
+
+
+
+
+
     class World1:
-        def __init__(self):
+        def __init__(self, player):
             self.start_y = HEIGHT - 240
             self.end_y = HEIGHT - 240
 
             self.blocks = [
                 [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)]
+            ]
+
+            self.enemies = [
+                Level2.Orc(WIDTH - 100, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), player)
             ]
 
         def draw(self):
@@ -78,3 +265,5 @@ class Level2:
                 else:
                     pygame.draw.rect(screen, (0, 255, 0), block)
                     screen.blit(Level2.block_sprites[0], (block.x, block.y))
+            for enemy in self.enemies:
+                enemy.run()

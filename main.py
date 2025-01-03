@@ -358,7 +358,7 @@ class Player:
 
     def _handle_collision(self, animation_func):
         animation_func()
-        self.y = HEIGHT // 2 + 200
+        self.y = current_world.start_y
         self.x = 50
         self.health -= 1
         if hasattr(current_world, 'regen'):
@@ -410,7 +410,7 @@ class Player:
                 level1.level1_end(current_level)
                 from worlds import level_2
                 from worlds.events import level2
-                current_level = level_2.Level2()
+                current_level = level_2.Level2(player)
                 world = 0
                 current_world = current_level.worlds[world]
                 level2.level2_start()
@@ -473,7 +473,7 @@ class Player:
                 from worlds.events import level2
                 from worlds import level_2
                 level2.level2_start()
-                current_level = level_2.Level2()
+                current_level = level_2.Level2(player)
                 current_level.draw_background_once()
             self.events()
             current_world.draw()
@@ -544,9 +544,9 @@ def main():
             world = 0
             from worlds import level_2
             from worlds.events import level2
-            current_level = level_2.Level2()
-            current_world = current_level.worlds[world]
             player = Player()
+            current_level = level_2.Level2(player)
+            current_world = current_level.worlds[world]
             level2.level2_start()
             player.x = 25
             player.y = current_world.start_y
