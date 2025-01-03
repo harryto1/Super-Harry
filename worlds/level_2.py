@@ -247,13 +247,14 @@ class Level2:
         def __init__(self, player):
             self.start_y = HEIGHT - 240
             self.end_y = HEIGHT - 240
+            self.player = player
 
             self.blocks = [
                 [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)]
             ]
 
             self.enemies = [
-                Level2.Orc(WIDTH - 100, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), player)
+                Level2.Orc(WIDTH - 100, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), self.player)
             ]
 
         def draw(self):
@@ -267,3 +268,8 @@ class Level2:
                     screen.blit(Level2.block_sprites[0], (block.x, block.y))
             for enemy in self.enemies:
                 enemy.run()
+
+        def regen(self):
+            self.enemies = [
+                Level2.Orc(WIDTH - 100, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), self.player)
+            ]
