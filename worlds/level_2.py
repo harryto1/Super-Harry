@@ -125,7 +125,7 @@ class Level2:
 
             self.attack_frame = 0
             self.attack_last_update = pygame.time.get_ticks()
-            self.attack_frame_rate = 75
+            self.attack_frame_rate = 50
 
             self.destination_x = self.player.x
 
@@ -177,13 +177,19 @@ class Level2:
                 self.attack_last_update = now
                 self.attack_frame = (self.attack_frame + 1) % len(self.attack_sprites)
                 if self.attack_frame == 0:
+                    if self.facing_left:
+                        if self.x - self.player.x > 10:
+                            if self.player.health > 1:
+                                self.player._handle_collision(self.player.draw_hurt_animation)
+                            else:
+                                self.player._handle_collision(self.player.draw_death_animation)
+                    else:
+                        if self.x - self.player.x < 10:
+                            if self.player.health > 1:
+                                self.player._handle_collision(self.player.draw_hurt_animation)
+                            else:
+                                self.player._handle_collision(self.player.draw_death_animation)
                     self.attacking = False  # Attack animation finished
-                if self.attack_frame == len(self.attack_sprites) - 2:
-                    if abs(self.x - self.player.x) < 50 and abs(self.y - self.player.y) < 50:
-                        if self.player.health > 1:
-                            self.player._handle_collision(self.player.draw_hurt_animation)
-                        else:
-                            self.player._handle_collision(self.player.draw_death_animation)
             sprite = pygame.transform.scale(self.attack_sprites[self.attack_frame],
                                             (self.sprite_width, self.sprite_height))
             if self.facing_left:
