@@ -124,7 +124,7 @@ class Level2:
                 self.attack_sprites.append(sprite)
 
             self.initial_x = x # Initial x position
-            self.behaviour_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
+            self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
             self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
 
             self.following_player = False
@@ -205,24 +205,24 @@ class Level2:
 
 
         def get_random_path(self):
-            self.behaviour_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
+            self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
             return random.randint(self.initial_x - 100, self.initial_x + 100)
 
         def get_random_path_away_from_player(self):
             if self.x - self.player.x > 0:
-                self.behaviour_zone = pygame.Rect(self.initial_x, self.y, 100 + (self.width * 2), self.height)
+                self.behavior_zone = pygame.Rect(self.initial_x, self.y, 100 + (self.width * 2), self.height)
                 return random.randint(self.initial_x, self.initial_x + 100)
             else:
-                self.behaviour_zone = pygame.Rect(self.initial_x - 100, self.y, 100 + (self.width * 2), self.height)
+                self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 100 + (self.width * 2), self.height)
                 return random.randint(self.initial_x - 100, self.initial_x)
 
-        def _draw_behaviour_zone(self):
-            pygame.draw.rect(screen, (0, 0, 255), self.behaviour_zone, 2)
+        def _draw_behavior_zone(self):
+            pygame.draw.rect(screen, (0, 0, 255), self.behavior_zone, 2)
 
         def _draw_attack_zone(self):
             pygame.draw.rect(screen, (128, 0, 128), self.attack_zone, 2)
 
-        def behaviour(self):
+        def behavior(self):
             if abs(self.x - self.player.x) < 250 and abs(self.y - self.player.y) < 50:
                 self.destination_x = self.player.x
                 self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
@@ -233,7 +233,7 @@ class Level2:
                 self.following_player = False
             elif random.randint(0, 100) == 0 and not self.moving and not self.attacking:
                 self.destination_x = self.get_random_path()
-            self._draw_behaviour_zone()
+            self._draw_behavior_zone()
             self._draw_attack_zone()
 
         def update_position(self):
@@ -271,7 +271,7 @@ class Level2:
 
         def run(self):
             self.update_position()
-            self.behaviour()
+            self.behavior()
             if self.moving:
                 self.draw_motion()
             elif self.attacking:
