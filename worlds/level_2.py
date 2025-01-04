@@ -123,11 +123,17 @@ class Level2:
                 sprite = attack_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
                 self.attack_sprites.append(sprite)
 
+            self.initial_x = x # Initial x position
+            self.behaviour_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
+            self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
+
+            self.following_player = False
+
             self.attack_frame = 0
             self.attack_last_update = pygame.time.get_ticks()
             self.attack_frame_rate = 50
 
-            self.destination_x = self.player.x
+            self.destination_x = random.randint(self.initial_x - 100, self.initial_x + 100)
 
         def draw_hitbox(self):
             pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
@@ -199,7 +205,36 @@ class Level2:
 
 
         def get_random_path(self):
-            self.destination_x = random.randint(50, WIDTH - 50)
+            self.behaviour_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
+            return random.randint(self.initial_x - 100, self.initial_x + 100)
+
+        def get_random_path_away_from_player(self):
+            if self.x - self.player.x > 0:
+                self.behaviour_zone = pygame.Rect(self.initial_x, self.y, 100 + (self.width * 2), self.height)
+                return random.randint(self.initial_x, self.initial_x + 100)
+            else:
+                self.behaviour_zone = pygame.Rect(self.initial_x - 100, self.y, 100 + (self.width * 2), self.height)
+                return random.randint(self.initial_x - 100, self.initial_x)
+
+        def _draw_behaviour_zone(self):
+            pygame.draw.rect(screen, (0, 0, 255), self.behaviour_zone, 2)
+
+        def _draw_attack_zone(self):
+            pygame.draw.rect(screen, (128, 0, 128), self.attack_zone, 2)
+
+        def behaviour(self):
+            if abs(self.x - self.player.x) < 250 and abs(self.y - self.player.y) < 50:
+                self.destination_x = self.player.x
+                self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
+                self.following_player = True
+            elif abs(self.x - self.destination_x) > 150 and self.following_player:
+                self.initial_x = self.x
+                self.destination_x = self.get_random_path_away_from_player()
+                self.following_player = False
+            elif random.randint(0, 100) == 0 and not self.moving and not self.attacking:
+                self.destination_x = self.get_random_path()
+            self._draw_behaviour_zone()
+            self._draw_attack_zone()
 
         def update_position(self):
             if self.attacking:
@@ -218,23 +253,25 @@ class Level2:
                 self.draw_attack()
                 return
 
+            # Wander
             if not self.attacking:
-                if self.x < self.player.x:
-                    self.facing_left = False
-                    self.x += self.speed
-                elif self.x > self.player.x:
-                    self.facing_left = True
-                    self.x -= self.speed
                 if abs(self.x - self.destination_x) < self.speed:
                     self.moving = False
-                    self.destination_x = self.player.x
+                elif self.x < self.destination_x:
+                    self.facing_left = False
+                    self.x += self.speed
+                elif self.x > self.destination_x:
+                    self.facing_left = True
+                    self.x -= self.speed
                 else:
-                    self.moving = True
+                    self.moving = False
+            self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
 
         def run(self):
             self.update_position()
+            self.behaviour()
             if self.moving:
                 self.draw_motion()
             elif self.attacking:
@@ -260,7 +297,7 @@ class Level2:
             ]
 
             self.enemies = [
-                Level2.Orc(WIDTH - 100, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), self.player)
+                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), self.player)
             ]
 
         def draw(self):
@@ -277,5 +314,5 @@ class Level2:
 
         def regen(self):
             self.enemies = [
-                Level2.Orc(WIDTH - 100, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), self.player)
+                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), self.player)
             ]
