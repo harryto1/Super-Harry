@@ -1,7 +1,5 @@
 import time
 
-import pygame
-
 initial_time = time.time()
 import sys
 from menus.game_menu import Menu, LevelSelection
@@ -13,7 +11,6 @@ from worlds.events import level1
 
 
 print(f'Imported all modules in {time.time() - initial_time} seconds')
-
 class Player:
     def __init__(self):
         self.block_beneath = None
@@ -110,6 +107,9 @@ class Player:
     def update_position(self, keys):
         global world, current_world
         self.moving = False
+
+        if hasattr(current_world, 'player_died') and current_world.player_died:
+            return
 
         # Handle horizontal movement
         if keys[pygame.K_a]:
@@ -505,6 +505,7 @@ class Player:
 
     def interactions(self):
         self._pick_up_object()
+
 
 
 def main():

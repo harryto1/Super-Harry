@@ -104,24 +104,20 @@ class Level2:
 
 
     class Orc(Enemy):
-        def __init__(self, x, y, speed, idle_spritesheet, motion_spritesheet, death_spritesheet, attack_spritesheet, player):
-            super().__init__(x, y, speed, idle_spritesheet, motion_spritesheet, death_spritesheet, attack_spritesheet, player)
-            self.idle_sprites = []
-            for i in range(6):
-                sprite = idle_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-                self.idle_sprites.append(sprite)
-            self.motion_sprites = []
-            for i in range(8):
-                sprite = motion_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-                self.motion_sprites.append(sprite)
-            self.death_sprites = []
-            for i in range(4):
-                sprite = death_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-                self.death_sprites.append(sprite)
-            self.attack_sprites = []
-            for i in range(6):
-                sprite = attack_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-                self.attack_sprites.append(sprite)
+        idle_spritesheet = pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png')
+        motion_spritesheet = pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png')
+        death_spritesheet = pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png')
+        attack_spritesheet = pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png')
+
+        def __init__(self, x, y, speed, player):
+            super().__init__(x, y, speed, self.idle_spritesheet, self.motion_spritesheet, self.death_spritesheet, self.attack_spritesheet, player)
+            self.idle_sprites = [self.idle_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100)) for i in range(6)]
+            self.motion_sprites = [self.motion_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100)) for i in
+                                   range(8)]
+            self.death_sprites = [self.death_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100)) for i in
+                                  range(4)]
+            self.attack_sprites = [self.attack_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100)) for i in
+                                   range(6)]
 
             self.initial_x = x # Initial x position
             self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
@@ -134,6 +130,8 @@ class Level2:
             self.attack_frame_rate = 50
 
             self.destination_x = random.randint(self.initial_x - 100, self.initial_x + 100)
+
+            self.player_died = False # To be set to True when the player is hit by the enemy
 
         def draw_hitbox(self):
             pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
@@ -183,26 +181,25 @@ class Level2:
                 self.attack_last_update = now
                 self.attack_frame = (self.attack_frame + 1) % len(self.attack_sprites)
                 if self.attack_frame == 0:
-                    if self.facing_left:
-                        if self.x - self.player.x > 10:
-                            if self.player.health > 1:
-                                self.player._handle_collision(self.player.draw_hurt_animation)
-                            else:
-                                self.player._handle_collision(self.player.draw_death_animation)
-                    else:
-                        if self.x - self.player.x < 10:
-                            if self.player.health > 1:
-                                self.player._handle_collision(self.player.draw_hurt_animation)
-                            else:
-                                self.player._handle_collision(self.player.draw_death_animation)
                     self.attacking = False  # Attack animation finished
+                    if self.player_died:
+                        if self.player.health > 1:
+                            self.player._handle_collision(self.player.draw_hurt_animation)
+                            self.player_died = False # Reset player death state after attack animation completes
+                        else:
+                            self.player._handle_collision(self.player.draw_death_animation)
+                            self.player_died = False # Reset player death state after attack animation completes
+
+            # Check if player is within attack range during the entire attack animation
+            if abs(self.x - self.player.x) < 35 and abs(self.y - self.player.y) < 50:
+                self.player_died = True
+
             sprite = pygame.transform.scale(self.attack_sprites[self.attack_frame],
                                             (self.sprite_width, self.sprite_height))
             if self.facing_left:
                 sprite = pygame.transform.flip(sprite, True, False)
             screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
                                  self.y - (self.sprite_height - self.height) + self.height + 45))
-
 
         def get_random_path(self):
             self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
@@ -260,9 +257,11 @@ class Level2:
                 elif self.x < self.destination_x:
                     self.facing_left = False
                     self.x += self.speed
+                    self.moving = True
                 elif self.x > self.destination_x:
                     self.facing_left = True
                     self.x -= self.speed
+                    self.moving = True
                 else:
                     self.moving = False
             self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
@@ -291,13 +290,14 @@ class Level2:
             self.start_y = HEIGHT - 240
             self.end_y = HEIGHT - 240
             self.player = player
+            self.player_died = False # To be set to True when the player is hit by the enemy
 
             self.blocks = [
                 [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)]
             ]
 
             self.enemies = [
-                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), self.player)
+                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, self.player)
             ]
 
         def draw(self):
@@ -311,8 +311,11 @@ class Level2:
                     screen.blit(Level2.block_sprites[0], (block.x, block.y))
             for enemy in self.enemies:
                 enemy.run()
+                if isinstance(enemy, Level2.Orc):
+                    self.player_died = any(enemy.player_died for enemy in self.enemies)
+
 
         def regen(self):
             self.enemies = [
-                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Walk.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png'), pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png'), self.player)
+                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, self.player)
             ]
