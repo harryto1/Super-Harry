@@ -478,14 +478,7 @@ class Player:
             self.events()
             current_world.draw()
             self.x = 25
-            for block in current_world.blocks:
-                if isinstance(block, list):
-                    for b in block:
-                        if b.x == self.x:
-                            self.y = b.y - self.height
-                else:
-                    if block.x == self.x:
-                        self.y = block.y - self.height
+            self.y = current_world.start_y
             self.jumping = False
             self.jump_velocity = 0
             self.health = 5
