@@ -76,6 +76,7 @@ class Level2:
             self.jumping = False
             self.attacking = False
             self.safe = True # To be set to False when Enemy detects a void beneath it
+            self.should_I_jump = False # To be set to True when Enemy detects he can jump lol
             self.jump_velocity = 0
             self.gravity_force = 1
             self.idle_spritesheet = idle_spritesheet
@@ -88,6 +89,11 @@ class Level2:
             self.frame_rate = 100
             self.current_world = current_world
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+            self.initial_x = x # Initial x position
+            self.destination_x = random.randint(self.initial_x - 100, self.initial_x + 100)
+
+
 
         def draw_idle(self):
             pass
@@ -178,6 +184,12 @@ class Level2:
             if self.jumping:  # Apply gravity if jumping or falling
                 self.y += self.jump_velocity
                 self.jump_velocity += self.gravity_force  # Increase downward velocity
+                if self.facing_left:
+                    self.x -= self.speed
+                    self.destination_x -= self.speed
+                else:
+                    self.x += self.speed
+                    self.destination_x += self.speed
                 self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
                 # Check for landing on a block
@@ -266,6 +278,40 @@ class Level2:
 
             return on_block, block_beneath
 
+        def check_if_I_should_jump(self, y):
+            blocks = []
+            for block_group in self.current_world.blocks:
+                if isinstance(block_group, list):
+                    blocks.extend(block_group)
+                else:
+                    blocks.append(block_group)
+
+            if hasattr(self.current_world, 'visible_blocks'):
+                blocks.extend(self.current_world.visible_blocks)
+
+            moving_blocks = []
+            if hasattr(self.current_world, 'moving_blocks'):
+                for moving_block in self.current_world.moving_blocks:
+                    moving_blocks.append(moving_block[0])
+
+            blocks.extend(moving_blocks)
+
+            self.should_I_jump = False
+            self.y -= y
+            if self.facing_left:
+                self.x -= 40
+            else:
+                self.x += 40
+            next_rect = pygame.Rect(self.x, self.y, self.width, self.height)
+            on_block, block_beneath = self._check_if_on_void(next_rect)
+            self.y += y
+            if self.facing_left:
+                self.x += 40
+            else:
+                self.x -= 40
+            if on_block:
+                self.should_I_jump = True
+
 
         def _check_if_moving_y_is_safe(self, y):
             blocks = []
@@ -349,7 +395,6 @@ class Level2:
             self.attack_sprites = [self.attack_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100)) for i in
                                    range(6)]
 
-            self.initial_x = x # Initial x position
             self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
             self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
 
@@ -358,8 +403,6 @@ class Level2:
             self.attack_frame = 0
             self.attack_last_update = pygame.time.get_ticks()
             self.attack_frame_rate = 50
-
-            self.destination_x = random.randint(self.initial_x - 100, self.initial_x + 100)
 
             self.player_died = False # To be set to True when the player is hit by the enemy
 
@@ -489,6 +532,9 @@ class Level2:
                     if self.safe:
                         self.x += self.speed
                         self.moving = True
+                        if self.should_I_jump and not self.jumping:
+                            self.jump_velocity = -15
+                            self.jumping = True # Jump if the enemy is on a block and can jump
                     else:
                         self.moving = False
                 elif self.x > self.destination_x:
@@ -496,6 +542,9 @@ class Level2:
                     if self.safe:
                         self.x -= self.speed
                         self.moving = True
+                        if self.should_I_jump and not self.jumping:
+                            self.jump_velocity = -15
+                            self.jumping = True
                     else:
                         self.moving = False
                 else:
@@ -565,6 +614,7 @@ class Level2:
             self.gravity()
             self.check_if_on_block()
             self.check_if_moving_is_safe()
+            self.check_if_I_should_jump(50)
             self.behavior()
             self.update_position()
             if self.moving:
@@ -591,7 +641,8 @@ class Level2:
             self.blocks = [
                 [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH - 300, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
                 [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 225, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
-                [pygame.Rect(x, HEIGHT // 2 + 150, 50, 50) for x in range(WIDTH // 2 - 100, WIDTH // 2 + 100, 50)]
+                [pygame.Rect(x, HEIGHT // 2 + 150, 50, 50) for x in range(WIDTH // 2 - 100, WIDTH // 2 + 100, 50)],
+                pygame.Rect(WIDTH // 2, HEIGHT - 250, 50, 50)
             ]
 
             self.enemies = [
