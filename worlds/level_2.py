@@ -238,7 +238,7 @@ class Level2:
                 self.draw_attack()
                 return
 
-            if abs(self.x - self.player.x) < 50 and abs(self.y - self.player.y) < 50:
+            if abs(self.x - self.player.x) < 35 and abs(self.y - self.player.y) < 50:
                 self.attacking = True
                 self.attack_frame = 0
                 self.attack_last_update = pygame.time.get_ticks()
