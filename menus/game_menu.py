@@ -1,7 +1,7 @@
 import random
 import sys
 
-import pygame
+from game_state import *
 
 from constants.constants import *
 from menus.pause_menu import PauseMenu
@@ -179,8 +179,22 @@ class LevelSelection:
             label_rect = label.get_rect(center=(block_x + block_width // 2, y_position + block_height + 20))
             self.screen.blit(label, label_rect)
 
+    def shake_block(self):
+        if self.selected_item in [0, 1]:
+            block_x = (WIDTH - (300 + 150) - 300) // 2 + (450 if self.selected_item == 1 else 0)
+            block_y = HEIGHT // 2
+            original_rect = pygame.Rect(block_x, block_y, 300, 250)
+            for _ in range(5):
+                for dx in [-5, 5]:
+                    self.screen.fill(self.bg_color)
+                    self.draw()
+                    pygame.draw.rect(self.screen, (255, 255, 255), original_rect.move(dx, 0), 2)
+                    pygame.display.flip()
+                    pygame.time.delay(50)
+
 
     def run(self):
+        game_state = load_game_state()
         while self.menu_loop:
             self.clock.tick(60)
             self.draw()
@@ -193,12 +207,13 @@ class LevelSelection:
                     if event.key == pygame.K_RIGHT:
                         self.selected_item = (self.selected_item + 1) % len(self.menu_items)
                     if event.key == pygame.K_RETURN:
-                        self.menu_loop = False
+                        if self.selected_item == 1 and not game_state['level_1_completed']:
+                            self.shake_block()
+                        else:
+                            self.menu_loop = False
                     if event.key == pygame.K_ESCAPE:
                         pause_selected = PauseMenu().run()
                         if pause_selected == 1:
                             sys.exit()
-
             pygame.display.flip()
         return self.selected_item
-

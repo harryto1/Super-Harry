@@ -1,5 +1,4 @@
 import time
-
 initial_time = time.time()
 import sys
 from menus.game_menu import Menu, LevelSelection
@@ -8,9 +7,11 @@ from menus.pause_menu import PauseMenu
 from menus.game_over_menu import GameOverMenu
 from worlds import level_1
 from worlds.events import level1
+from game_state import *
 
 
 print(f'Imported all modules in {time.time() - initial_time} seconds')
+
 class Player:
     def __init__(self):
         self.block_beneath = None
@@ -405,8 +406,11 @@ class Player:
     def new_level(self):
         global level, current_level, world, current_world
         level += 1
+        game_state = load_game_state()
         match level:
             case 1:
+                game_state['level_1_completed'] = True
+                save_game_state(game_state)
                 level1.level1_end(current_level)
                 from worlds import level_2
                 from worlds.events import level2
@@ -507,9 +511,9 @@ class Player:
         self._pick_up_object()
 
 
-
 def main():
-    global current_level, current_world, player, world, level
+    global current_level, current_world, player, world, level, game_state
+    game_state = load_game_state()
     print(f'Created player object in {time.time() - initial_time} seconds')
     pygame.init()
     print(f'Initialized pygame in {time.time() - initial_time} seconds')
@@ -594,3 +598,4 @@ if __name__ == '__main__':
 
 # Ideas:
 # Boss Fight
+# An enemy that picks lava from nearby world lava sources and makes a fireball with it and throws it at the player
