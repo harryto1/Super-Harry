@@ -62,7 +62,7 @@ class Level2:
         screen.blit(self.background_surface, (0, 0))
 
     class Enemy:
-        def __init__(self, x, y, speed, idle_spritesheet, motion_spritesheet, death_spritesheet, attack_spritesheet, player):
+        def __init__(self, x, y, speed, idle_spritesheet, motion_spritesheet, death_spritesheet, attack_spritesheet, player, current_world):
             self.x = x
             self.y = y
             self.player = player
@@ -75,6 +75,7 @@ class Level2:
             self.facing_left = False
             self.jumping = False
             self.attacking = False
+            self.safe = True # To be set to False when Enemy detects a void beneath it
             self.jump_velocity = 0
             self.gravity_force = 1
             self.idle_spritesheet = idle_spritesheet
@@ -85,6 +86,7 @@ class Level2:
             self.motion_frame = 0
             self.last_update = pygame.time.get_ticks()
             self.frame_rate = 100
+            self.current_world = current_world
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         def draw_idle(self):
@@ -102,6 +104,203 @@ class Level2:
         def update_position(self):
             pass
 
+        def check_if_on_block(self):
+            blocks = []
+            for block_group in self.current_world.blocks:
+                if isinstance(block_group, list):
+                    blocks.extend(block_group)
+                else:
+                    blocks.append(block_group)
+
+            if hasattr(self.current_world, 'visible_blocks'):
+                blocks.extend(self.current_world.visible_blocks)
+
+            moving_blocks = []
+            if hasattr(self.current_world, 'moving_blocks'):
+                for moving_block in self.current_world.moving_blocks:
+                    moving_blocks.append(moving_block[0])
+
+            blocks.extend(moving_blocks)
+
+            on_block = False
+            self.block_beneath = None
+
+            if not self.jumping:  # Only check if the player is not jumping
+                for block in blocks:
+                    if (
+                            abs(self.rect.bottom - block.top) <= self.speed  # Near or touching the block's top
+                            and self.rect.right > block.left  # Horizontally overlapping
+                            and self.rect.left < block.right  # Horizontally overlapping
+                    ):
+                        on_block = True
+                        self.block_beneath = block
+                        break
+
+            if on_block:
+                self.jumping = False
+                self.jump_velocity = 0
+
+                if self.block_beneath in moving_blocks:
+                    for moving_block in self.current_world.moving_blocks:
+                        if moving_block[0] == self.block_beneath:
+                            self.y = self.block_beneath.top - self.height
+                            break
+
+            else:
+                self.jumping = True  # Player starts falling if not above a block
+
+
+            if hasattr(self.current_world, 'moving_blocks'):
+               if self.block_beneath in moving_blocks:
+                   for moving_block in self.current_world.moving_blocks:
+                       if moving_block[0] == self.block_beneath:
+                           if moving_block[1] == 'left':
+                               self.x -= 3
+                               break
+                           elif moving_block[1] == 'right':
+                               self.x += 3
+                               break
+
+        def gravity(self):
+            blocks = []
+            for block_group in self.current_world.blocks:
+                if isinstance(block_group, list):
+                    blocks.extend(block_group)
+                else:
+                    blocks.append(block_group)
+
+            if hasattr(self.current_world, 'visible_blocks'):
+                blocks.extend(self.current_world.visible_blocks)
+
+            if hasattr(self.current_world, 'moving_blocks'):
+                blocks += [block[0] for block in self.current_world.moving_blocks]
+
+            if self.jumping:  # Apply gravity if jumping or falling
+                self.y += self.jump_velocity
+                self.jump_velocity += self.gravity_force  # Increase downward velocity
+                self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+                # Check for landing on a block
+                for block in blocks:
+                    if isinstance(block, list):
+                        for b in block:
+                            if (
+                                    self.rect.colliderect(b)
+                                    and self.rect.bottom >= b.top  # Ensure player is actually landing
+                                    and self.rect.bottom <= b.top + self.jump_velocity + 1  # Account for overshoot
+                                    and self.rect.right > b.left  # Horizontally overlapping
+                                    and self.rect.left < b.right  # Horizontally overlapping
+                            ):
+                                self.y = b.top - self.height
+                                self.jumping = False
+                                self.jump_velocity = 0
+                                break
+                    else:
+                        if (
+                                self.rect.colliderect(block)
+                                and self.rect.bottom >= block.top  # Ensure player is actually landing
+                                and self.rect.bottom <= block.top + self.jump_velocity + 1  # Account for overshoot
+                                and self.rect.right > block.left  # Horizontally overlapping
+                                and self.rect.left < block.right  # Horizontally overlapping
+                        ):
+                            self.y = block.top - self.height  # Align with block's top
+                            self.jumping = False  # Stop falling
+                            self.jump_velocity = 0  # Reset vertical velocity
+                            break
+            else:
+                self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+            if hasattr(self.current_world, 'moving_blocks'):
+                for moving_block in self.current_world.moving_blocks:
+                    if (
+                            self.rect.colliderect(moving_block[0])
+                            and self.rect.bottom >= moving_block[0].top  # Ensure player is actually landing
+                            and self.rect.bottom <= moving_block[
+                        0].top + self.jump_velocity + 2  # Account for overshoot
+                            and self.rect.right > moving_block[0].left  # Horizontally overlapping
+                            and self.rect.left < moving_block[0].right  # Horizontally overlapping
+                    ):
+                        if moving_block[1] == 'up':
+                            self.y = moving_block[0].top - self.height
+                            self.jumping = False
+                            self.jump_velocity = 0
+                            break
+                        elif moving_block[1] == 'down':
+                            self.y = moving_block[0].top - self.height
+                            self.jumping = False
+                            self.jump_velocity = 0
+                            break
+                        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+        def _check_if_on_void(self, rect):
+            blocks = []
+            for block_group in self.current_world.blocks:
+                if isinstance(block_group, list):
+                    blocks.extend(block_group)
+                else:
+                    blocks.append(block_group)
+
+            if hasattr(self.current_world, 'visible_blocks'):
+                blocks.extend(self.current_world.visible_blocks)
+
+            moving_blocks = []
+            if hasattr(self.current_world, 'moving_blocks'):
+                for moving_block in self.current_world.moving_blocks:
+                    moving_blocks.append(moving_block[0])
+
+            blocks.extend(moving_blocks)
+
+            on_block = False
+            block_beneath = None
+
+            if not self.jumping:
+                for block in blocks:
+                    if (
+                            abs(rect.bottom - block.top) <= self.speed  # Near or touching the block's top
+                            and rect.right > block.left  # Horizontally overlapping
+                            and rect.left < block.right  # Horizontally overlapping
+                    ):
+                        on_block = True
+                        block_beneath = block
+                        break
+
+            return on_block, block_beneath
+
+
+
+        def check_if_moving_is_safe(self):
+            blocks = []
+            for block_group in self.current_world.blocks:
+                if isinstance(block_group, list):
+                    blocks.extend(block_group)
+                else:
+                    blocks.append(block_group)
+
+            if hasattr(self.current_world, 'visible_blocks'):
+                blocks.extend(self.current_world.visible_blocks)
+
+            moving_blocks = []
+            if hasattr(self.current_world, 'moving_blocks'):
+                for moving_block in self.current_world.moving_blocks:
+                    moving_blocks.append(moving_block[0])
+
+            blocks.extend(moving_blocks)
+
+            self.safe = True
+            if self.facing_left:
+                self.x -= 40
+            else:
+                self.x += 40
+            next_rect = pygame.Rect(self.x, self.y, self.width, self.height)
+            on_block, block_beneath = self._check_if_on_void(next_rect)
+            if not on_block:
+                self.safe = False
+            if self.facing_left:
+                self.x += 40
+            else:
+                self.x -= 40
+
+
 
     class Orc(Enemy):
         idle_spritesheet = pygame.image.load('assets/worlds/enemies/orc/Orc-Idle.png')
@@ -109,8 +308,8 @@ class Level2:
         death_spritesheet = pygame.image.load('assets/worlds/enemies/orc/Orc-Death.png')
         attack_spritesheet = pygame.image.load('assets/worlds/enemies/orc/Orc-Attack01.png')
 
-        def __init__(self, x, y, speed, player):
-            super().__init__(x, y, speed, self.idle_spritesheet, self.motion_spritesheet, self.death_spritesheet, self.attack_spritesheet, player)
+        def __init__(self, x, y, speed, player, current_world):
+            super().__init__(x, y, speed, self.idle_spritesheet, self.motion_spritesheet, self.death_spritesheet, self.attack_spritesheet, player, current_world)
             self.idle_sprites = [self.idle_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100)) for i in range(6)]
             self.motion_sprites = [self.motion_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100)) for i in
                                    range(8)]
@@ -256,21 +455,87 @@ class Level2:
                     self.moving = False
                 elif self.x < self.destination_x:
                     self.facing_left = False
-                    self.x += self.speed
-                    self.moving = True
+                    if self.safe:
+                        self.x += self.speed
+                        self.moving = True
+                    else:
+                        self.moving = False
                 elif self.x > self.destination_x:
                     self.facing_left = True
-                    self.x -= self.speed
-                    self.moving = True
+                    if self.safe:
+                        self.x -= self.speed
+                        self.moving = True
+                    else:
+                        self.moving = False
                 else:
                     self.moving = False
             self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
+            # Horizontal collision handling
+            for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks',
+                         'doors']:  # Remove moving_blocks if bug gets too annoying
+                if hasattr(self.current_world, attr):
+                    for block in getattr(self.current_world, attr):
+                        if attr == 'moving_blocks':
+                            block = block[0]
+                        if attr == 'doors':
+                            if block[1] == 'locked':
+                                block = block[0]
+                            else:
+                                continue  # Prevent collision with unlocked doors
+                        if isinstance(block, list):
+                            for b in block:
+                                if self.rect.colliderect(b):
+                                    if self.rect.bottom > b.top and self.rect.top < b.bottom:
+                                        if self.facing_left and self.rect.left < b.right and self.rect.right > b.left:
+                                            self.x = b.right
+                                        elif not self.facing_left and self.rect.right > b.left and self.rect.left < b.right:
+                                            self.x = b.left - self.width
+                        else:
+                            if self.rect.colliderect(block):
+                                if self.rect.bottom > block.top and self.rect.top < block.bottom:
+                                    if self.facing_left and self.rect.left < block.right and self.rect.right > block.left:
+                                        self.x = block.right
+                                    elif not self.facing_left and self.rect.right > block.left and self.rect.left < block.right:
+                                        self.x = block.left - self.width
+
+            # Update the player's rectangle position after horizontal collision adjustments
+            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+            # Vertical collision handling
+            for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
+                if hasattr(self.current_world, attr):
+                    for block in getattr(self.current_world, attr):
+                        if attr == 'moving_blocks':
+                            block = block[0]
+                        if attr == 'doors':
+                            if block[1] == 'locked':
+                                block = block[0]
+                            else:
+                                continue  # Prevent collision with unlocked doors
+                        if isinstance(block, list):
+                            for b in block:
+                                if self.rect.colliderect(b):
+                                    if self.rect.top < b.bottom and self.rect.bottom > b.top and self.jump_velocity < 0:
+                                        self.y = b.bottom
+                                        self.jump_velocity = 0
+                        else:
+                            if self.rect.colliderect(block):
+                                if self.rect.top < block.bottom and self.rect.bottom > block.top and self.jump_velocity < 0:
+                                    self.y = block.bottom
+                                    self.jump_velocity = 0
+
+            # Update the player's rectangle position after vertical collision adjustments
+            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
 
         def run(self):
-            self.update_position()
+            self.gravity()
+            self.check_if_on_block()
+            self.check_if_moving_is_safe()
             self.behavior()
+            self.update_position()
             if self.moving:
                 self.draw_motion()
             elif self.attacking:
@@ -293,11 +558,14 @@ class Level2:
             self.player_died = False # To be set to True when the player is hit by the enemy
 
             self.blocks = [
-                [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)]
+                [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH - 300, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 225, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
+                pygame.Rect(WIDTH // 2 - 100, HEIGHT - 250, 50, 50),
             ]
 
             self.enemies = [
-                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, self.player)
+                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, self.player, self),
+                Level2.Orc(WIDTH // 2 - 100, 0, 2, self.player, self)
             ]
 
         def draw(self):
@@ -317,5 +585,5 @@ class Level2:
 
         def regen(self):
             self.enemies = [
-                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, self.player)
+                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, self.player, self)
             ]
