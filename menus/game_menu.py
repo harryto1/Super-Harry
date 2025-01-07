@@ -1,5 +1,8 @@
 import random
 import sys
+
+import pygame
+
 from constants.constants import *
 from menus.pause_menu import PauseMenu
 
@@ -140,6 +143,7 @@ class LevelSelection:
         self.font = pygame.font.Font('assets/font/Monocraft.ttf', 36)
         self.font_color = GRAY
         self.menu_items = ['Level 1', 'Level 2']
+        self.menu_images = ['assets/levels/level_1_image.png', 'assets/levels/level_2_image.png']
         self.selected_item = 0
         self.clock = pygame.time.Clock()
         self.menu_loop = True
@@ -159,8 +163,17 @@ class LevelSelection:
             block_x = start_x + i * (block_width + spacing)
             if i == self.selected_item:
                 label = self.font.render(item, 1, (255, 255, 255))
+                image = pygame.image.load(self.menu_images[i])
+                image = pygame.transform.smoothscale(image, (block_width, block_height))
+                screen.blit(image, (block_x, y_position))
                 pygame.draw.rect(self.screen, (255, 255, 255), (block_x, y_position, block_width, block_height), 2)
             else:
+                image = pygame.image.load(self.menu_images[i])
+                image = pygame.transform.smoothscale(image, (block_width, block_height))
+                dark_surface = pygame.Surface((block_width, block_height), pygame.SRCALPHA)
+                dark_surface.fill((0, 0, 0, 150))  # Semi-transparent black
+                image.blit(dark_surface, (0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+                screen.blit(image, (block_x, y_position))
                 pygame.draw.rect(self.screen, GRAY, (block_x, y_position, block_width, block_height), 2)
                 label = self.font.render(item, 1, self.font_color)
             label_rect = label.get_rect(center=(block_x + block_width // 2, y_position + block_height + 20))
