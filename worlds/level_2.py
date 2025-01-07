@@ -267,6 +267,34 @@ class Level2:
             return on_block, block_beneath
 
 
+        def _check_if_moving_y_is_safe(self, y):
+            blocks = []
+            for block_group in self.current_world.blocks:
+                if isinstance(block_group, list):
+                    blocks.extend(block_group)
+                else:
+                    blocks.append(block_group)
+
+            if hasattr(self.current_world, 'visible_blocks'):
+                blocks.extend(self.current_world.visible_blocks)
+
+            moving_blocks = []
+            if hasattr(self.current_world, 'moving_blocks'):
+                for moving_block in self.current_world.moving_blocks:
+                    moving_blocks.append(moving_block[0])
+
+            blocks.extend(moving_blocks)
+
+            self.safe = True
+            self.y += y
+            next_rect = pygame.Rect(self.x, self.y, self.width, self.height)
+            on_block, block_beneath = self._check_if_on_void(next_rect)
+            self.y -= y
+            if not on_block:
+                self.safe = False
+            return self.safe
+
+
 
         def check_if_moving_is_safe(self):
             blocks = []
@@ -295,6 +323,9 @@ class Level2:
             on_block, block_beneath = self._check_if_on_void(next_rect)
             if not on_block:
                 self.safe = False
+                for temp_y in range(50, 300):
+                    if self._check_if_moving_y_is_safe(temp_y):
+                        break
             if self.facing_left:
                 self.x += 40
             else:
@@ -560,7 +591,7 @@ class Level2:
             self.blocks = [
                 [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH - 300, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
                 [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 225, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
-                pygame.Rect(WIDTH // 2 - 100, HEIGHT - 250, 50, 50),
+                [pygame.Rect(x, HEIGHT // 2 + 150, 50, 50) for x in range(WIDTH // 2 - 100, WIDTH // 2 + 100, 50)]
             ]
 
             self.enemies = [
