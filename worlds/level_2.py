@@ -92,6 +92,8 @@ class Level2:
 
             self.initial_x = x # Initial x position
             self.destination_x = random.randint(self.initial_x - 100, self.initial_x + 100)
+            self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
+
 
 
 
@@ -167,6 +169,11 @@ class Level2:
                                self.x += 3
                                break
 
+        def get_random_path(self):
+            self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
+            return random.randint(self.initial_x - 100, self.initial_x + 100)
+
+
         def gravity(self):
             blocks = []
             for block_group in self.current_world.blocks:
@@ -179,71 +186,58 @@ class Level2:
                 blocks.extend(self.current_world.visible_blocks)
 
             if hasattr(self.current_world, 'moving_blocks'):
-                blocks += [block[0] for block in self.current_world.moving_blocks]
+                blocks.extend([block[0] for block in self.current_world.moving_blocks])
 
-            if self.jumping:  # Apply gravity if jumping or falling
-                self.y += self.jump_velocity
-                self.jump_velocity += self.gravity_force  # Increase downward velocity
-                if self.facing_left:
-                    self.x -= self.speed
-                    self.destination_x -= self.speed
-                else:
-                    self.x += self.speed
-                    self.destination_x += self.speed
-                self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+            if self.jumping:
+                # Calculate new vertical position
+                new_y = self.y + self.jump_velocity
+                # Calculate new horizontal position based on facing direction
+                new_x = self.x - self.speed if self.facing_left else self.x + self.speed
 
-                # Check for landing on a block
+                self.jump_velocity += self.gravity_force
+
+                # First check vertical collision
+                vertical_collision = False
+                test_rect_vertical = pygame.Rect(self.x, new_y, self.width, self.height)
+
                 for block in blocks:
-                    if isinstance(block, list):
-                        for b in block:
-                            if (
-                                    self.rect.colliderect(b)
-                                    and self.rect.bottom >= b.top  # Ensure player is actually landing
-                                    and self.rect.bottom <= b.top + self.jump_velocity + 1  # Account for overshoot
-                                    and self.rect.right > b.left  # Horizontally overlapping
-                                    and self.rect.left < b.right  # Horizontally overlapping
-                            ):
-                                self.y = b.top - self.height
-                                self.jumping = False
-                                self.jump_velocity = 0
-                                break
-                    else:
-                        if (
-                                self.rect.colliderect(block)
-                                and self.rect.bottom >= block.top  # Ensure player is actually landing
-                                and self.rect.bottom <= block.top + self.jump_velocity + 1  # Account for overshoot
-                                and self.rect.right > block.left  # Horizontally overlapping
-                                and self.rect.left < block.right  # Horizontally overlapping
-                        ):
-                            self.y = block.top - self.height  # Align with block's top
-                            self.jumping = False  # Stop falling
-                            self.jump_velocity = 0  # Reset vertical velocity
+                    if test_rect_vertical.colliderect(block):
+                        if self.jump_velocity < 0 and test_rect_vertical.top <= block.bottom:  # Hitting ceiling
+                            self.y = block.bottom
+                            self.jump_velocity = 0
+                            vertical_collision = True
                             break
-            else:
-                self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-
-            if hasattr(self.current_world, 'moving_blocks'):
-                for moving_block in self.current_world.moving_blocks:
-                    if (
-                            self.rect.colliderect(moving_block[0])
-                            and self.rect.bottom >= moving_block[0].top  # Ensure player is actually landing
-                            and self.rect.bottom <= moving_block[
-                        0].top + self.jump_velocity + 2  # Account for overshoot
-                            and self.rect.right > moving_block[0].left  # Horizontally overlapping
-                            and self.rect.left < moving_block[0].right  # Horizontally overlapping
-                    ):
-                        if moving_block[1] == 'up':
-                            self.y = moving_block[0].top - self.height
+                        elif self.jump_velocity > 0 and test_rect_vertical.bottom >= block.top:  # Landing
+                            self.y = block.top - self.height
                             self.jumping = False
                             self.jump_velocity = 0
+                            vertical_collision = True
                             break
-                        elif moving_block[1] == 'down':
-                            self.y = moving_block[0].top - self.height
-                            self.jumping = False
-                            self.jump_velocity = 0
-                            break
-                        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
+                if not vertical_collision:
+                    self.y = new_y
+
+                # Then check horizontal collision
+                horizontal_collision = False
+                test_rect_horizontal = pygame.Rect(new_x, self.y, self.width, self.height)
+
+                for block in blocks:
+                    if test_rect_horizontal.colliderect(block):
+                        horizontal_collision = True
+                        # If we hit a wall while jumping, stop horizontal movement but continue vertical
+                        if self.facing_left:
+                            self.x = block.right
+                            self.destination_x = self.get_random_path()
+                        else:
+                            self.x = block.left - self.width
+                            self.destination_x = self.get_random_path()
+                        break
+
+                if not horizontal_collision:
+                    self.x = new_x
+
+            # Update rectangle position
+            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         def _check_if_on_void(self, rect):
             blocks = []
             for block_group in self.current_world.blocks:
@@ -310,7 +304,8 @@ class Level2:
             else:
                 self.x -= 40
             if on_block:
-                self.should_I_jump = True
+                if not self.jumping:
+                    self.should_I_jump = True
 
 
         def _check_if_moving_y_is_safe(self, y):
@@ -474,10 +469,6 @@ class Level2:
             screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
                                  self.y - (self.sprite_height - self.height) + self.height + 45))
 
-        def get_random_path(self):
-            self.behavior_zone = pygame.Rect(self.initial_x - 100, self.y, 200 + (self.width * 2), self.height)
-            return random.randint(self.initial_x - 100, self.initial_x + 100)
-
         def get_random_path_away_from_player(self):
             if self.x - self.player.x > 0:
                 self.behavior_zone = pygame.Rect(self.initial_x, self.y, 100 + (self.width * 2), self.height)
@@ -523,22 +514,24 @@ class Level2:
                 self.draw_attack()
                 return
 
-            # Wander
+            # Wander behavior
             if not self.attacking:
                 if abs(self.x - self.destination_x) < self.speed:
                     self.moving = False
                 elif self.x < self.destination_x:
-                    self.facing_left = False
+                    if not self.jumping:
+                        self.facing_left = False
                     if self.safe:
                         self.x += self.speed
                         self.moving = True
                         if self.should_I_jump and not self.jumping:
                             self.jump_velocity = -15
-                            self.jumping = True # Jump if the enemy is on a block and can jump
+                            self.jumping = True
                     else:
                         self.moving = False
                 elif self.x > self.destination_x:
-                    self.facing_left = True
+                    if not self.jumping:
+                        self.facing_left = True
                     if self.safe:
                         self.x -= self.speed
                         self.moving = True
@@ -549,64 +542,76 @@ class Level2:
                         self.moving = False
                 else:
                     self.moving = False
+
             self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
             # Horizontal collision handling
-            for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks',
-                         'doors']:  # Remove moving_blocks if bug gets too annoying
-                if hasattr(self.current_world, attr):
-                    for block in getattr(self.current_world, attr):
-                        if attr == 'moving_blocks':
-                            block = block[0]
-                        if attr == 'doors':
-                            if block[1] == 'locked':
-                                block = block[0]
-                            else:
-                                continue  # Prevent collision with unlocked doors
-                        if isinstance(block, list):
-                            for b in block:
-                                if self.rect.colliderect(b):
-                                    if self.rect.bottom > b.top and self.rect.top < b.bottom:
-                                        if self.facing_left and self.rect.left < b.right and self.rect.right > b.left:
-                                            self.x = b.right
-                                        elif not self.facing_left and self.rect.right > b.left and self.rect.left < b.right:
-                                            self.x = b.left - self.width
-                        else:
-                            if self.rect.colliderect(block):
-                                if self.rect.bottom > block.top and self.rect.top < block.bottom:
-                                    if self.facing_left and self.rect.left < block.right and self.rect.right > block.left:
-                                        self.x = block.right
-                                    elif not self.facing_left and self.rect.right > block.left and self.rect.left < block.right:
-                                        self.x = block.left - self.width
-
-            # Update the player's rectangle position after horizontal collision adjustments
-            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-
-            # Vertical collision handling
             for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
                 if hasattr(self.current_world, attr):
-                    for block in getattr(self.current_world, attr):
+                    blocks = getattr(self.current_world, attr)
+                    if not isinstance(blocks, list):
+                        blocks = [blocks]
+
+                    for block in blocks:
                         if attr == 'moving_blocks':
                             block = block[0]
                         if attr == 'doors':
                             if block[1] == 'locked':
                                 block = block[0]
                             else:
-                                continue  # Prevent collision with unlocked doors
+                                continue
+
                         if isinstance(block, list):
-                            for b in block:
-                                if self.rect.colliderect(b):
-                                    if self.rect.top < b.bottom and self.rect.bottom > b.top and self.jump_velocity < 0:
-                                        self.y = b.bottom
-                                        self.jump_velocity = 0
+                            collision_blocks = block
                         else:
-                            if self.rect.colliderect(block):
-                                if self.rect.top < block.bottom and self.rect.bottom > block.top and self.jump_velocity < 0:
-                                    self.y = block.bottom
+                            collision_blocks = [block]
+
+                        for b in collision_blocks:
+                            if self.rect.colliderect(b):
+                                if self.rect.bottom > b.top and self.rect.top < b.bottom:
+                                    if self.facing_left and self.rect.left < b.right:
+                                        self.x = b.right
+                                    elif not self.facing_left and self.rect.right > b.left:
+                                        self.x = b.left - self.width
+
+            # Update rectangle after horizontal collisions
+            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+            # Vertical collision handling (revised)
+            for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
+                if hasattr(self.current_world, attr):
+                    blocks = getattr(self.current_world, attr)
+                    if not isinstance(blocks, list):
+                        blocks = [blocks]
+
+                    for block in blocks:
+                        if attr == 'moving_blocks':
+                            block = block[0]
+                        if attr == 'doors':
+                            if block[1] == 'locked':
+                                block = block[0]
+                            else:
+                                continue
+
+                        if isinstance(block, list):
+                            collision_blocks = block
+                        else:
+                            collision_blocks = [block]
+
+                        for b in collision_blocks:
+                            if self.rect.colliderect(b):
+                                # Handle collision with block top (falling)
+                                if self.jump_velocity > 0 and self.rect.bottom >= b.top and self.rect.top < b.top:
+                                    self.y = b.top - self.height
+                                    self.jumping = False
+                                    self.jump_velocity = 0
+                                # Handle collision with block bottom (jumping)
+                                elif self.jump_velocity < 0 and self.rect.top <= b.bottom and self.rect.bottom > b.bottom:
+                                    self.y = b.bottom
                                     self.jump_velocity = 0
 
-            # Update the player's rectangle position after vertical collision adjustments
+            # Final rectangle update
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
 
@@ -642,7 +647,9 @@ class Level2:
                 [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH - 300, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
                 [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 225, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
                 [pygame.Rect(x, HEIGHT // 2 + 150, 50, 50) for x in range(WIDTH // 2 - 100, WIDTH // 2 + 100, 50)],
-                pygame.Rect(WIDTH // 2, HEIGHT - 250, 50, 50)
+                pygame.Rect(WIDTH // 2, HEIGHT - 250, 50, 50),
+                pygame.Rect(WIDTH // 2, HEIGHT - 300, 50, 50),
+                [pygame.Rect(WIDTH // 2 + 300, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT - 500, -50)]
             ]
 
             self.enemies = [
