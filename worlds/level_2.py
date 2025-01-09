@@ -238,6 +238,38 @@ class Level2:
 
             # Update rectangle position
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+
+        def has_line_of_sight(self):
+            blocks = []
+            for block_group in self.current_world.blocks:
+                if isinstance(block_group, list):
+                    blocks.extend(block_group)
+                else:
+                    blocks.append(block_group)
+
+            if hasattr(self.current_world, 'visible_blocks'):
+                blocks.extend(self.current_world.visible_blocks)
+
+            if hasattr(self.current_world, 'moving_blocks'):
+                blocks.extend([block[0] for block in self.current_world.moving_blocks])
+
+            player_center = (
+                self.player.x + self.player.width // 2,
+                self.player.y + self.player.height // 2
+            )
+            orc_center = (
+                self.x + self.width // 2,
+                self.y + self.height // 2
+            )
+
+            # Check if any block intersects the line between orc and player
+            for block in blocks:
+                if block.clipline(orc_center, player_center):
+                    return False
+
+            return True
+
         def _check_if_on_void(self, rect):
             blocks = []
             for block_group in self.current_world.blocks:
@@ -484,7 +516,7 @@ class Level2:
             pygame.draw.rect(screen, (128, 0, 128), self.attack_zone, 2)
 
         def behavior(self):
-            if abs(self.x - self.player.x) < 250 and abs(self.y - self.player.y) < 50:
+            if abs(self.x - self.player.x) < 250 and abs(self.y - self.player.y) < 50 and self.has_line_of_sight():
                 self.destination_x = self.player.x
                 self.attack_zone = pygame.Rect(self.x - 200, self.y, 450, self.height)
                 self.following_player = True
