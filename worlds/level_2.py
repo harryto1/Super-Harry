@@ -21,15 +21,15 @@ class Level2:
         self.bg_color = (0, 0, 0)
         self.worlds = [self.World1(player)]
         self.background_surface = pygame.Surface((WIDTH, HEIGHT))
-        self.background_spritesheet = pygame.image.load('assets/worlds/background/Dungeon_brick_wall_blue.png.png')
-        self.background_sprite = pygame.transform.scale(self.background_spritesheet.subsurface(pygame.Rect(0, 0, 1920, 1080)), (WIDTH, HEIGHT))
-        self.block_spritesheet = pygame.image.load('assets/worlds/blocks/blocks.png')
+        self.background_spritesheets = ['assets/worlds/background/plx-1.png', 'assets/worlds/background/plx-2.png', 'assets/worlds/background/plx-3.png', 'assets/worlds/background/plx-4.png', 'assets/worlds/background/plx-5.png']
+        self.background_sprites = [pygame.transform.scale(pygame.image.load(sheet).subsurface(pygame.Rect(0, 0, 384, 216)), (WIDTH, HEIGHT)) for sheet in self.background_spritesheets]
+        self.block_spritesheet = pygame.image.load('assets/worlds/blocks/world_tileset.png')
         self.spikes_spritesheet = pygame.image.load('assets/worlds/enemies/16-bit-spike-Sheet.png')
         self.lava_spritesheet = pygame.image.load('assets/worlds/enemies/spritesheet-burninglava.png')
         self.fireball_spritesheet = pygame.image.load('assets/worlds/enemies/Firebolt SpriteSheet.png')
         self.door_spritesheet = pygame.image.load('assets/worlds/background/Tiles.png')
-        for i in range(5):
-            sprite = self.block_spritesheet.subsurface(pygame.Rect(i * 32, 0, 32, 32))
+        for i in range(3):
+            sprite = self.block_spritesheet.subsurface(pygame.Rect(0, i * 16, 16, 16))
             sprite = pygame.transform.scale(sprite, (50, 50))
             self.block_sprites.append(sprite)
         for i in range(4):
@@ -55,8 +55,9 @@ class Level2:
 
 
     def draw_background_once(self):
-        self.background_surface.blit(self.background_sprite, (0, 0))
-        self.background_surface.fill((50, 50, 50), special_flags=pygame.BLEND_RGB_MULT)
+        for sprite in self.background_sprites:
+            self.background_surface.blit(sprite, (0, 0))
+        self.background_surface.fill((150, 150, 150), special_flags=pygame.BLEND_RGB_MULT)
 
     def draw_background(self):
         screen.blit(self.background_surface, (0, 0))
@@ -123,6 +124,10 @@ class Level2:
             if hasattr(self.current_world, 'visible_blocks'):
                 blocks.extend(self.current_world.visible_blocks)
 
+            if hasattr(self.current_world, 'grass_blocks'):
+                for grass_block in self.current_world.grass_blocks:
+                    blocks.extend(grass_block)
+
             moving_blocks = []
             if hasattr(self.current_world, 'moving_blocks'):
                 for moving_block in self.current_world.moving_blocks:
@@ -184,6 +189,10 @@ class Level2:
 
             if hasattr(self.current_world, 'visible_blocks'):
                 blocks.extend(self.current_world.visible_blocks)
+
+            if hasattr(self.current_world, 'grass_blocks'):
+                for grass_block in self.current_world.grass_blocks:
+                    blocks.extend(grass_block)
 
             if hasattr(self.current_world, 'moving_blocks'):
                 blocks.extend([block[0] for block in self.current_world.moving_blocks])
@@ -251,6 +260,10 @@ class Level2:
             if hasattr(self.current_world, 'visible_blocks'):
                 blocks.extend(self.current_world.visible_blocks)
 
+            if hasattr(self.current_world, 'grass_blocks'):
+                for grass_block in self.current_world.grass_blocks:
+                    blocks.extend(grass_block)
+
             if hasattr(self.current_world, 'moving_blocks'):
                 blocks.extend([block[0] for block in self.current_world.moving_blocks])
 
@@ -280,6 +293,10 @@ class Level2:
 
             if hasattr(self.current_world, 'visible_blocks'):
                 blocks.extend(self.current_world.visible_blocks)
+
+            if hasattr(self.current_world, 'grass_blocks'):
+                for grass_block in self.current_world.grass_blocks:
+                    blocks.extend(grass_block)
 
             moving_blocks = []
             if hasattr(self.current_world, 'moving_blocks'):
@@ -314,6 +331,10 @@ class Level2:
 
             if hasattr(self.current_world, 'visible_blocks'):
                 blocks.extend(self.current_world.visible_blocks)
+
+            if hasattr(self.current_world, 'grass_blocks'):
+                for grass_block in self.current_world.grass_blocks:
+                    blocks.extend(grass_block)
 
             moving_blocks = []
             if hasattr(self.current_world, 'moving_blocks'):
@@ -351,6 +372,10 @@ class Level2:
             if hasattr(self.current_world, 'visible_blocks'):
                 blocks.extend(self.current_world.visible_blocks)
 
+            if hasattr(self.current_world, 'grass_blocks'):
+                for grass_block in self.current_world.grass_blocks:
+                    blocks.extend(grass_block)
+
             moving_blocks = []
             if hasattr(self.current_world, 'moving_blocks'):
                 for moving_block in self.current_world.moving_blocks:
@@ -379,6 +404,10 @@ class Level2:
 
             if hasattr(self.current_world, 'visible_blocks'):
                 blocks.extend(self.current_world.visible_blocks)
+
+            if hasattr(self.current_world, 'grass_blocks'):
+                for grass_block in self.current_world.grass_blocks:
+                    blocks.extend(grass_block)
 
             moving_blocks = []
             if hasattr(self.current_world, 'moving_blocks'):
@@ -579,7 +608,7 @@ class Level2:
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
             # Horizontal collision handling
-            for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
+            for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors', 'grass_blocks']:
                 if hasattr(self.current_world, attr):
                     blocks = getattr(self.current_world, attr)
                     if not isinstance(blocks, list):
@@ -611,7 +640,7 @@ class Level2:
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
             # Vertical collision handling (revised)
-            for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
+            for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors' 'grass_blocks']:
                 if hasattr(self.current_world, attr):
                     blocks = getattr(self.current_world, attr)
                     if not isinstance(blocks, list):
@@ -675,9 +704,14 @@ class Level2:
             self.player = player
             self.player_died = False # To be set to True when the player is hit by the enemy
 
+            self.grass_blocks = [
+                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(0, WIDTH - 300, 50)],
+                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(WIDTH - 225, WIDTH, 50)]
+            ]
+
             self.blocks = [
-                [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH - 300, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
-                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 225, WIDTH, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH - 300, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 225, WIDTH, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
                 [pygame.Rect(x, HEIGHT // 2 + 150, 50, 50) for x in range(WIDTH // 2 - 100, WIDTH // 2 + 100, 50)],
                 pygame.Rect(WIDTH // 2, HEIGHT - 250, 50, 50),
                 pygame.Rect(WIDTH // 2, HEIGHT - 300, 50, 50),
@@ -690,14 +724,20 @@ class Level2:
             ]
 
         def draw(self):
+
+            for grass_block in self.grass_blocks:
+                if isinstance(grass_block, list):
+                    for block in grass_block:
+                        screen.blit(Level2.block_sprites[0], (block.x, block.y))
+                else:
+                    screen.blit(Level2.block_sprites[0], (grass_block.x, grass_block.y))
+
             for block in self.blocks:
                 if isinstance(block, list):
                     for b in block:
-                        pygame.draw.rect(screen, (0, 255, 0), b)
-                        screen.blit(Level2.block_sprites[0], (b.x, b.y))
+                        screen.blit(Level2.block_sprites[1], (b.x, b.y))
                 else:
-                    pygame.draw.rect(screen, (0, 255, 0), block)
-                    screen.blit(Level2.block_sprites[0], (block.x, block.y))
+                    screen.blit(Level2.block_sprites[1], (block.x, block.y))
             for enemy in self.enemies:
                 enemy.run()
                 if isinstance(enemy, Level2.Orc):

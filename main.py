@@ -135,7 +135,7 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         # Horizontal collision handling
-        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']: # Remove moving_blocks if bug gets too annoying
+        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors', 'grass_blocks']: # Remove moving_blocks if bug gets too annoying
             if hasattr(current_world, attr):
                 for block in getattr(current_world, attr):
                     if attr == 'moving_blocks':
@@ -165,7 +165,7 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         # Vertical collision handling
-        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors']:
+        for attr in ['blocks', 'barrier_blocks', 'visible_blocks', 'moving_blocks', 'doors', 'grass_blocks']:
             if hasattr(current_world, attr):
                 for block in getattr(current_world, attr):
                     if attr == 'moving_blocks':
@@ -211,6 +211,10 @@ class Player:
 
         if hasattr(current_world, 'visible_blocks'):
             blocks.extend(current_world.visible_blocks)
+
+        if hasattr(current_world, 'grass_blocks'):
+            for grass_block in current_world.grass_blocks:
+                blocks.extend(grass_block)
 
         moving_blocks = []
         if hasattr(current_world, 'moving_blocks'):
@@ -271,6 +275,10 @@ class Player:
 
         if hasattr(current_world, 'visible_blocks'):
             blocks.extend(current_world.visible_blocks)
+
+        if hasattr(current_world, 'grass_blocks'):
+            for grass_block in current_world.grass_blocks:
+                blocks.extend(grass_block)
 
         if hasattr(current_world, 'moving_blocks'):
             blocks += [block[0] for block in current_world.moving_blocks]
