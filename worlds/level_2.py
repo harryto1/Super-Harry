@@ -21,7 +21,7 @@ class Level2:
 
     def __init__(self, player):
         self.bg_color = (0, 0, 0)
-        self.worlds = [self.World1(player)]
+        self.worlds = [self.World1(player), self.World2(player)]
         self.background_surface = pygame.Surface((WIDTH, HEIGHT))
         self.background_spritesheets = ['assets/worlds/background/plx-1.png', 'assets/worlds/background/plx-2.png', 'assets/worlds/background/plx-3.png', 'assets/worlds/background/plx-4.png', 'assets/worlds/background/plx-5.png']
         self.background_sprites = [pygame.transform.scale(pygame.image.load(sheet).subsurface(pygame.Rect(0, 0, 384, 216)), (WIDTH, HEIGHT)) for sheet in self.background_spritesheets]
@@ -801,5 +801,67 @@ class Level2:
                 Level2.Orc(WIDTH // 3, HEIGHT - 300, 2, self.player, self),
                 Level2.Orc(WIDTH // 2 - 100, HEIGHT - 350, 2, self.player, self),
                 Level2.Orc(WIDTH * 2 // 3 + 165, HEIGHT - 350, 2, self.player, self)
+
+            ]
+
+    class World2:
+        def __init__(self, player):
+            self.start_y = HEIGHT - 240
+            self.end_y = HEIGHT - 240
+            self.player = player
+            self.player_died = False # To be set to True when the player is hit by the enemy
+
+            self.grass_blocks = [
+                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(0, 400, 50)],
+                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(450, 750, 50)]
+            ]
+
+            self.blocks = [
+                [pygame.Rect(x, y, 50, 50) for x in range(0, 400, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
+                pygame.Rect(200, HEIGHT - 250, 50, 50),
+                [pygame.Rect(250, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT - 350, -50)],
+                [pygame.Rect(300, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT - 400, -50)],
+                [pygame.Rect(350, y, 50, 50) for y in range(HEIGHT- 250, HEIGHT - 450, -50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(450, 750, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
+                [pygame.Rect(450, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT - 450, -50)],
+                [pygame.Rect(500, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT - 400, -50)],
+                [pygame.Rect(550, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT- 350, -50)],
+                [pygame.Rect(600, y, 50, 50) for y in range(HEIGHT- 250, HEIGHT - 300, -50)]
+
+
+            ]
+
+            self.enemies = [
+                Level2.Orc(300, HEIGHT - 450, 2, self.player, self),
+                Level2.Orc(450, HEIGHT - 450, 2, self.player, self)
+            ]
+
+        def draw(self):
+            for grass_block in self.grass_blocks:
+                if isinstance(grass_block, list):
+                    for block in grass_block:
+                        screen.blit(Level2.block_sprites[0], (block.x, block.y))
+                else:
+                    screen.blit(Level2.block_sprites[0], (grass_block.x, grass_block.y))
+
+            for block in self.blocks:
+                if isinstance(block, list):
+                    for b in block:
+                        screen.blit(Level2.block_sprites[1], (b.x, b.y))
+                else:
+                    screen.blit(Level2.block_sprites[1], (block.x, block.y))
+
+            for enemy in self.enemies:
+                enemy.run()
+                if isinstance(enemy, Level2.Orc):
+                    self.player_died = any(enemy.player_died for enemy in self.enemies)
+                if isinstance(enemy, Level2.Orc):
+                    if enemy.orc_dn_exist:
+                        self.enemies.remove(enemy)
+
+        def regen(self):
+            self.enemies = [
+                Level2.Orc(300, HEIGHT - 450, 2, self.player, self),
+                Level2.Orc(450, HEIGHT - 450, 2, self.player, self)
 
             ]
