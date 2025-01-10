@@ -12,6 +12,7 @@ class Level2:
     fireball_sprites = []
     door_sprite = []
     unlocked_door_sprite = []
+    sword_sprite = pygame.transform.scale(pygame.image.load('assets/worlds/objects/sword_asset.png'), (50, 50))
     key_sprites = [
         pygame.transform.scale(pygame.image.load('assets/worlds/objects/door_key_1.png'), (50, 50)),
         pygame.transform.scale(pygame.image.load('assets/worlds/objects/door_key_1(2).png'), (50, 50))
@@ -742,7 +743,7 @@ class Level2:
             ]
 
             self.objects = [
-                Sword('sword', Level2.key_sprites, pygame.Rect(WIDTH - 100, HEIGHT - 250, 50, 50))
+                Sword('sword', Level2.sword_sprite, pygame.Rect(WIDTH - 100, HEIGHT - 250, 50, 50))
             ]
 
         def draw(self):
