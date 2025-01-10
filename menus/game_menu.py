@@ -131,7 +131,7 @@ class Menu:
                         self.menu_loop = False
                     if event.key == pygame.K_ESCAPE:
                         pause_selected = PauseMenu().run()
-                        if pause_selected == 1:
+                        if pause_selected == 2:
                             sys.exit()
             pygame.display.flip()
         return self.selected_item
@@ -225,7 +225,7 @@ class LevelSelection:
                             self.menu_loop = False
                     if event.key == pygame.K_ESCAPE:
                         pause_selected = PauseMenu().run()
-                        if pause_selected == 1:
+                        if pause_selected == 2:
                             sys.exit()
             pygame.display.flip()
         return self.selected_item

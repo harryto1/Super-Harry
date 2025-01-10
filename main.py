@@ -655,8 +655,29 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pause_selected = PauseMenu().run()
-                    if pause_selected == 1:
+                    if pause_selected == 2:
                         sys.exit()
+                    elif pause_selected == 1:
+                        level_selection = LevelSelection()
+                        level = level_selection.run()
+                        if level == 0:
+                            world = 0
+                            current_level = level_1.Level1()
+                            current_world = current_level.worlds[world]
+                            player = Player()
+                            level1.level1_start()
+                        elif level == 1:
+                            world = 0
+                            from worlds import level_2
+                            player = Player()
+                            current_level = level_2.Level2(player)
+                            current_world = current_level.worlds[world]
+                            level2.level2_start()
+                            player.x = 25
+                            player.y = current_world.start_y
+                            player.jumping = False
+                            player.jump_velocity = 0
+                        current_level.draw_background_once()
         pygame.display.update()
         Clock.tick(60)  # Set the frame rate to 60 FPS
 

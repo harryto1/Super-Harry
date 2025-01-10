@@ -7,7 +7,7 @@ class PauseMenu:
         self.title_font = pygame.font.Font(None, 72)
         self.font = pygame.font.Font(None, 36)
         self.font_color = GRAY
-        self.menu_items = ['Resume', 'Quit']
+        self.menu_items = ['Resume', 'Levels', 'Quit']
         self.selected_item = 0
         self.clock = pygame.time.Clock()
         self.menu_loop = True
