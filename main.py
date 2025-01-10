@@ -1,5 +1,7 @@
 import time
 
+import pygame.font
+
 initial_time = time.time()
 import sys
 from menus.game_menu import Menu, LevelSelection
@@ -7,7 +9,7 @@ from constants.constants import *
 from menus.pause_menu import PauseMenu
 from menus.game_over_menu import GameOverMenu
 from worlds import level_1
-from worlds.events import level1
+from worlds.events import level1, level2
 from game_state import *
 from worlds.objects.sword import Sword
 
@@ -569,12 +571,18 @@ def main():
     print(f'Initialized pygame in {time.time() - initial_time} seconds')
     Clock = pygame.time.Clock()
     screen = pygame.display.set_mode()
+    def display_fps():
+        fps = str(int(Clock.get_fps()))
+        font = pygame.font.Font(None, 36)
+        fps_text = font.render(fps, 1, pygame.Color('coral'))
+        screen.blit(fps_text, (WIDTH - 50, 10))
     pygame.display.set_caption("Game Menu")
     menu_items = ['Start','Levels', 'Quit']
     menu = Menu(GRAY, menu_items)
     selected = menu.run()
     a_or_d = False # Check if the player pressed A or D
     space_instructions_done = False # Check if the player pressed SPACE
+    sword_instructions_done = False # Check if the player pressed F
     world = 2
     level = 0
     if selected == 2:
@@ -591,7 +599,6 @@ def main():
         elif level == 1:
             world = 0
             from worlds import level_2
-            from worlds.events import level2
             player = Player()
             current_level = level_2.Level2(player)
             current_world = current_level.worlds[world]
@@ -611,12 +618,17 @@ def main():
     running = True
     while running:
         current_level.draw_background()
+        display_fps()
         if level == 0 and not a_or_d:
             if level1.start_instructions(player):
                 a_or_d = True
         if level == 0 and not space_instructions_done and a_or_d:
             if level1.space_instructions(player):
                 space_instructions_done = True
+        if level == 1 and not sword_instructions_done:
+            keys = pygame.key.get_pressed()
+            if level2.sword_instructions(player, keys):
+                sword_instructions_done = True
         player.check_for_new_world()
         player.gravity()
         player.check_if_on_block()
