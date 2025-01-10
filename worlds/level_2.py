@@ -757,7 +757,6 @@ class Level2:
             ]
 
         def draw(self):
-
             for grass_block in self.grass_blocks:
                 if isinstance(grass_block, list):
                     for block in grass_block:
