@@ -724,22 +724,32 @@ class Level2:
             self.player_died = False # To be set to True when the player is hit by the enemy
 
             self.grass_blocks = [
-                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(0, WIDTH - 300, 50)],
-                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(WIDTH - 225, WIDTH, 50)]
+                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(0, 500, 50)],
+                [pygame.Rect(x, HEIGHT - 250, 50, 50) for x in range(500, WIDTH // 3 + 100, 50)],
+                [pygame.Rect(x, HEIGHT - 300, 50, 50) for x in range(WIDTH // 3 + 110, WIDTH // 2, 50)],
+                [pygame.Rect(x, HEIGHT - 350, 50, 50) for x in range(WIDTH // 2 + 40, WIDTH // 2 + 200, 50)],
+                [pygame.Rect(x, HEIGHT - 450, 50, 50) for x in range(WIDTH // 2 + 240, WIDTH // 2 + 350, 50)],
+                [pygame.Rect(x, HEIGHT - 350, 50, 50) for x in range(WIDTH // 2 + 390, WIDTH * 2//3 + 200, 50)],
+                [pygame.Rect(x, HEIGHT - 250, 50, 50) for x in range(WIDTH * 2//3 + 220, WIDTH - 240, 50)],
+                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(WIDTH - 220, WIDTH, 50)],
             ]
 
             self.blocks = [
-                [pygame.Rect(x, y, 50, 50) for x in range(0, WIDTH - 300, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
-                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 225, WIDTH, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
-                [pygame.Rect(x, HEIGHT // 2 + 150, 50, 50) for x in range(WIDTH // 2 - 100, WIDTH // 2 + 100, 50)],
-                pygame.Rect(WIDTH // 2, HEIGHT - 250, 50, 50),
-                pygame.Rect(WIDTH // 2, HEIGHT - 300, 50, 50),
-                [pygame.Rect(WIDTH // 2 + 300, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT - 500, -50)]
+                [pygame.Rect(x, y, 50, 50) for x in range(0, 500, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(500, WIDTH // 3 + 100, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH // 3 + 110, WIDTH // 2, 50) for y in range(HEIGHT - 250, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH // 2 + 40, WIDTH // 2 + 200, 50) for y in range(HEIGHT - 300, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH // 2 + 240, WIDTH // 2 + 350, 50) for y in range(HEIGHT - 400, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH // 2 + 390, WIDTH * 2//3 + 200, 50) for y in range(HEIGHT - 300, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH * 2//3 + 220, WIDTH - 240, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 220, WIDTH, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
+                [pygame.Rect(x, HEIGHT - 565, 50, 50) for x in range(WIDTH // 3 + 260, WIDTH // 2 + 150, 50)]
+
             ]
 
             self.enemies = [
-                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, self.player, self),
-                Level2.Orc(WIDTH // 2 - 100, 0, 2, self.player, self)
+                Level2.Orc(WIDTH // 3, HEIGHT - 300, 2, self.player, self),
+                Level2.Orc(WIDTH // 2 - 100, HEIGHT - 350, 2, self.player, self)
             ]
 
             self.objects = [
@@ -777,5 +787,7 @@ class Level2:
 
         def regen(self):
             self.enemies = [
-                Level2.Orc(WIDTH // 2 + 200, HEIGHT - 240, 2, self.player, self)
+                Level2.Orc(WIDTH // 3, HEIGHT - 300, 2, self.player, self),
+                Level2.Orc(WIDTH // 2 - 100, HEIGHT - 350, 2, self.player, self)
+
             ]
