@@ -454,6 +454,9 @@ class Player:
                 level1.world2_events(player, current_world)
             if world == 2:
                 level1.world3_events(player, current_world, current_level)
+        elif level == 1:
+            if world == 0:
+                level2.world1_events(player, current_world)
 
     def new_level(self):
         global level, current_level, world, current_world

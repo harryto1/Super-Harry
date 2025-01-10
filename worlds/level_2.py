@@ -743,13 +743,18 @@ class Level2:
                 [pygame.Rect(x, y, 50, 50) for x in range(WIDTH // 2 + 390, WIDTH * 2//3 + 200, 50) for y in range(HEIGHT - 300, HEIGHT, 50)],
                 [pygame.Rect(x, y, 50, 50) for x in range(WIDTH * 2//3 + 220, WIDTH - 240, 50) for y in range(HEIGHT - 200, HEIGHT, 50)],
                 [pygame.Rect(x, y, 50, 50) for x in range(WIDTH - 220, WIDTH, 50) for y in range(HEIGHT - 150, HEIGHT, 50)],
-                [pygame.Rect(x, HEIGHT - 565, 50, 50) for x in range(WIDTH // 3 + 260, WIDTH // 2 + 150, 50)]
+                [pygame.Rect(x, HEIGHT - 565, 50, 50) for x in range(WIDTH // 3 + 260, WIDTH // 2 + 150, 50)],
+                [pygame.Rect(x, HEIGHT - 615, 50, 50) for x in range(WIDTH // 3 - 150, WIDTH // 3 + 100, 50)]
 
             ]
 
             self.enemies = [
                 Level2.Orc(WIDTH // 3, HEIGHT - 300, 2, self.player, self),
                 Level2.Orc(WIDTH // 2 - 100, HEIGHT - 350, 2, self.player, self)
+            ]
+
+            self.bonus_hearts = [
+                [pygame.Rect(WIDTH // 3 - 50, HEIGHT - 665, 50, 50), True]
             ]
 
             self.objects = [
@@ -783,6 +788,12 @@ class Level2:
                 if not obj.in_inventory:
                     obj.draw()
 
+            for heart in self.bonus_hearts:
+                if heart[1]:
+                    pygame.draw.rect(screen, (255, 0, 0), heart[0], 2)
+                    screen.blit(Level2.bonus_hearts_sprite, (
+                    heart[0].x + (heart[0].width - Level2.bonus_hearts_sprite.get_width()) // 2,
+                    heart[0].y + (heart[0].height - Level2.bonus_hearts_sprite.get_height()) // 2))
 
         def regen(self):
             self.enemies = [

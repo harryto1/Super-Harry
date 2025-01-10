@@ -51,3 +51,14 @@ def sword_instructions(player, keys):
             return True
 
     return False
+
+
+def world1_events(player, current_world):
+    for bonus_heart in current_world.bonus_hearts:
+        if player.rect.colliderect(bonus_heart[0]):
+            bonus_heart[1] = False
+            player.health += 1
+            text = pygame.font.Font('assets/font/Monocraft.ttf', 36).render('+1', True, (0, 255, 0))
+            text_rect = text.get_rect(center=(bonus_heart[0].centerx, bonus_heart[0].centery - 50))
+            screen.blit(text, text_rect)
+            current_world.bonus_hearts.remove(bonus_heart)
