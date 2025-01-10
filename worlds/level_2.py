@@ -750,7 +750,8 @@ class Level2:
 
             self.enemies = [
                 Level2.Orc(WIDTH // 3, HEIGHT - 300, 2, self.player, self),
-                Level2.Orc(WIDTH // 2 - 100, HEIGHT - 350, 2, self.player, self)
+                Level2.Orc(WIDTH // 2 - 100, HEIGHT - 350, 2, self.player, self),
+                Level2.Orc(WIDTH * 2//3 + 165 , HEIGHT - 350, 2, self.player, self)
             ]
 
             self.bonus_hearts = [
@@ -798,6 +799,7 @@ class Level2:
         def regen(self):
             self.enemies = [
                 Level2.Orc(WIDTH // 3, HEIGHT - 300, 2, self.player, self),
-                Level2.Orc(WIDTH // 2 - 100, HEIGHT - 350, 2, self.player, self)
+                Level2.Orc(WIDTH // 2 - 100, HEIGHT - 350, 2, self.player, self),
+                Level2.Orc(WIDTH * 2 // 3 + 165, HEIGHT - 350, 2, self.player, self)
 
             ]
