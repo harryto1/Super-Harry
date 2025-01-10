@@ -1,10 +1,9 @@
-
 from constants.constants import *
+# Silver Phantom
 
-class DoorKey:
-    def __init__(self, id, door, sprite, rect):
+class Sword:
+    def __init__(self, id, sprite, rect):
         self.id = id
-        self.door = door
         self.rect = rect
         self.sprite = sprite
         self.in_inventory = False # This will be set to True when the player picks up the key

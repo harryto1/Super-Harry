@@ -3,6 +3,7 @@ import random
 import pygame.time
 
 from constants.constants import *
+from worlds.objects.sword import Sword
 
 class Level2:
     block_sprites = []
@@ -460,7 +461,13 @@ class Level2:
             self.attack_last_update = pygame.time.get_ticks()
             self.attack_frame_rate = 50
 
+            self.death_frame = 0
+            self.death_last_update = pygame.time.get_ticks()
+            self.death_frame_rate = 50
+
             self.player_died = False # To be set to True when the player is hit by the enemy
+            self.orc_died = False # To be set to True when orc is hit by the player
+            self.orc_dn_exist = False
 
         def draw_hitbox(self):
             pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
@@ -494,15 +501,21 @@ class Level2:
         def draw_death(self):
             if not self.death_sprites:
                 return
-            for i in range(4):
-                screen.fill(BLACK)
-                sprite = pygame.transform.scale(self.death_sprites[i], (self.sprite_width, self.sprite_height))
-                if self.facing_left:
-                    sprite = pygame.transform.flip(sprite, True, False)
-                screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
-                                     self.y - (self.sprite_height - self.height) + self.height + 45))
-                pygame.display.update()
-                pygame.time.wait(200)
+            if not self.orc_died:
+                return
+            now = pygame.time.get_ticks()
+            if now - self.death_last_update > self.death_frame_rate:
+                self.death_last_update = now
+                self.death_frame = (self.death_frame + 1) % len(self.death_sprites)
+                if self.death_frame == 0:
+                    self.orc_dn_exist = True
+
+            sprite = pygame.transform.scale(self.death_sprites[self.death_frame],
+                                            (self.sprite_width, self.sprite_height))
+            if self.facing_left:
+                sprite = pygame.transform.flip(sprite, True, False)
+            screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
+                                 self.y - (self.sprite_height - self.height) + self.height + 45))
 
         def draw_attack(self):
             now = pygame.time.get_ticks()
@@ -561,6 +574,9 @@ class Level2:
         def update_position(self):
             if self.attacking:
                 self.draw_attack()
+                return
+            if self.orc_died:
+                self.draw_death()
                 return
 
             if abs(self.x - self.player.x) < 35 and abs(self.y - self.player.y) < 50:
@@ -683,7 +699,9 @@ class Level2:
             self.check_if_I_should_jump(50)
             self.behavior()
             self.update_position()
-            if self.moving:
+            if self.orc_died:
+                self.draw_death()
+            elif self.moving:
                 self.draw_motion()
             elif self.attacking:
                 self.draw_attack()
@@ -723,6 +741,10 @@ class Level2:
                 Level2.Orc(WIDTH // 2 - 100, 0, 2, self.player, self)
             ]
 
+            self.objects = [
+                Sword('sword', Level2.key_sprites, pygame.Rect(WIDTH - 100, HEIGHT - 250, 50, 50))
+            ]
+
         def draw(self):
 
             for grass_block in self.grass_blocks:
@@ -738,10 +760,18 @@ class Level2:
                         screen.blit(Level2.block_sprites[1], (b.x, b.y))
                 else:
                     screen.blit(Level2.block_sprites[1], (block.x, block.y))
+
             for enemy in self.enemies:
                 enemy.run()
                 if isinstance(enemy, Level2.Orc):
                     self.player_died = any(enemy.player_died for enemy in self.enemies)
+                if isinstance(enemy, Level2.Orc):
+                    if enemy.orc_dn_exist:
+                        self.enemies.remove(enemy)
+
+            for obj in self.objects:
+                if not obj.in_inventory:
+                    obj.draw()
 
 
         def regen(self):

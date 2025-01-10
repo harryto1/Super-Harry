@@ -1,4 +1,5 @@
 import time
+
 initial_time = time.time()
 import sys
 from menus.game_menu import Menu, LevelSelection
@@ -8,6 +9,7 @@ from menus.game_over_menu import GameOverMenu
 from worlds import level_1
 from worlds.events import level1
 from game_state import *
+from worlds.objects.sword import Sword
 
 
 print(f'Imported all modules in {time.time() - initial_time} seconds')
@@ -29,6 +31,7 @@ class Player:
         self.moving = False
         self.facing_left = False
         self.jumping = False
+        self.attacking = False
         self.jump_velocity = 0
         self.gravity_force = 1
         self.idle_spritesheet = pygame.image.load('assets/characters/player/Soldier-Idle.png')
@@ -51,12 +54,21 @@ class Player:
         for i in range(4):
             sprite = self.death_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
             self.death_sprites.append(sprite)
+        self.attack_spritesheet = pygame.image.load('assets/characters/player/Soldier-Attack01.png')
+        self.attack_sprites = []
+        for i in range(6):
+            sprite = self.attack_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
+            self.attack_sprites.append(sprite)
         self.idle_frame = 0
         self.walk_frame = 0
         self.last_update = pygame.time.get_ticks()
         self.frame_rate = 100  # milliseconds per frame
         self.heart = pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png')
         self.immune = False
+
+        self.attack_frame = 0
+        self.attack_last_update = pygame.time.get_ticks()
+        self.attack_frame_rate = 50
 
     def draw_idle(self):
         now = pygame.time.get_ticks()
@@ -105,6 +117,28 @@ class Player:
             pygame.display.update()
             pygame.time.wait(200)
 
+    def draw_attack_animation(self):
+        if not self.attacking:
+            return
+        now = pygame.time.get_ticks()
+        if now - self.attack_last_update > self.attack_frame_rate:
+            self.attack_last_update = now
+            self.attack_frame = (self.attack_frame + 1) % len(self.attack_sprites)
+            if self.attack_frame == 0:
+                self.attacking = False  # Attack animation finished
+
+        # Check if Orc is within attack range during the entire attack animation
+        for orc in current_world.enemies:
+            if abs(self.x - orc.x) < 45 and abs(self.y - orc.y) < 50 and orc.has_line_of_sight():
+                orc.orc_died = True
+
+        sprite = pygame.transform.scale(self.attack_sprites[self.attack_frame],
+                                        (self.sprite_width, self.sprite_height))
+        if self.facing_left:
+            sprite = pygame.transform.flip(sprite, True, False)
+        screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
+                             self.y - (self.sprite_height - self.height) + self.height + 45))
+
     def update_position(self, keys):
         global world, current_world
         self.moving = False
@@ -125,6 +159,14 @@ class Player:
         if keys[pygame.K_SLASH]:
             self.x = WIDTH - 100
             self.y = current_world.end_y
+
+        # Attack
+        if keys[pygame.K_f]:
+            if any(isinstance(obj, Sword) for obj in self.inventory):
+                if not self.attacking:
+                    self.attacking = True
+
+
 
         # Handle jumping
         if keys[pygame.K_SPACE] and not self.jumping:
@@ -391,10 +433,10 @@ class Player:
         ]
         for obj_rect in objects_rects:
             for obj in self.inventory:
-                if isinstance(obj.key_sprite, list):
-                    screen.blit(pygame.transform.scale(obj.key_sprite[0], (50, 50)), obj_rect)
+                if isinstance(obj.sprite, list):
+                    screen.blit(pygame.transform.scale(obj.sprite[0], (50, 50)), obj_rect)
                 else:
-                    screen.blit(pygame.transform.scale(obj.key_sprite, (50, 50)), obj_rect)
+                    screen.blit(pygame.transform.scale(obj.sprite, (50, 50)), obj_rect)
 
     def draw_UI(self):
         self._draw_hearts()
@@ -586,7 +628,9 @@ def main():
         player.events()
         player.check_dead()
         player.check_0_health()
-        if player.moving:
+        if player.attacking:
+            player.draw_attack_animation()
+        elif player.moving:
             player.draw_walk_animation()
         else:
             player.draw_idle()
