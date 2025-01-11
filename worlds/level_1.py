@@ -136,6 +136,9 @@ class Level1:
             pygame.draw.rect(screen, (255, 0, 0), self.special_spikes[n], 2)
             screen.blit(self.spikes_sprites[0], (self.special_spikes[n].x, self.special_spikes[n].y))
 
+        def regen(self):
+            pass
+
     class World2:
         def __init__(self):
             self.start_y = HEIGHT // 2 + 220 # The y-coordinate where the player will be teleported when the world is loaded

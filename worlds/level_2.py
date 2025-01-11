@@ -804,6 +804,10 @@ class Level2:
 
             ]
 
+            for obj in self.objects:
+                if obj not in self.player.inventory:
+                    obj.in_inventory = False
+
     class World2:
         def __init__(self, player):
             self.start_y = HEIGHT - 240

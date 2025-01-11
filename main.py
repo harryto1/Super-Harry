@@ -535,7 +535,8 @@ class Player:
                 current_level = level_2.Level2(player)
                 current_level.draw_background_once()
             self.events()
-            current_world.draw()
+            self.inventory = []
+            current_world.regen()
             self.x = 25
             self.y = current_world.start_y
             self.jumping = False
