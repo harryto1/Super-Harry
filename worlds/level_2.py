@@ -813,7 +813,8 @@ class Level2:
 
             self.grass_blocks = [
                 [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(0, 400, 50)],
-                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(450, 750, 50)]
+                [pygame.Rect(x, HEIGHT - 200, 50, 50) for x in range(450, 750, 50)],
+                [pygame.Rect(x, HEIGHT - 250, 50, 50) for x in range(WIDTH // 2 - 100, WIDTH // 2 + 100, 50)]
             ]
 
             self.blocks = [
@@ -826,7 +827,8 @@ class Level2:
                 [pygame.Rect(450, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT - 450, -50)],
                 [pygame.Rect(500, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT - 400, -50)],
                 [pygame.Rect(550, y, 50, 50) for y in range(HEIGHT - 250, HEIGHT- 350, -50)],
-                [pygame.Rect(600, y, 50, 50) for y in range(HEIGHT- 250, HEIGHT - 300, -50)]
+                [pygame.Rect(600, y, 50, 50) for y in range(HEIGHT- 250, HEIGHT - 300, -50)],
+                [pygame.Rect(x, y, 50, 50) for x in range(WIDTH // 2 - 100, WIDTH // 2 + 100, 50) for y in range(HEIGHT - 200, HEIGHT, 50)]
 
 
             ]
