@@ -24,7 +24,12 @@ class Level2:
         self.worlds = [self.World1(player), self.World2(player)]
         self.background_surface = pygame.Surface((WIDTH, HEIGHT))
         self.background_spritesheets = ['assets/worlds/background/plx-1.png', 'assets/worlds/background/plx-2.png', 'assets/worlds/background/plx-3.png', 'assets/worlds/background/plx-4.png', 'assets/worlds/background/plx-5.png']
-        self.background_sprites = [pygame.transform.scale(pygame.image.load(sheet).subsurface(pygame.Rect(0, 0, 384, 216)), (WIDTH, HEIGHT)) for sheet in self.background_spritesheets]
+        self.background_sprites = [
+            pygame.transform.scale(
+                pygame.image.load(sheet).convert_alpha().subsurface(pygame.Rect(0, 0, 384, 216)),
+                (WIDTH, HEIGHT)
+            ) for sheet in self.background_spritesheets
+        ]
         self.block_spritesheet = pygame.image.load('assets/worlds/blocks/world_tileset.png')
         self.spikes_spritesheet = pygame.image.load('assets/worlds/enemies/16-bit-spike-Sheet.png')
         self.lava_spritesheet = pygame.image.load('assets/worlds/enemies/spritesheet-burninglava.png')
@@ -54,6 +59,9 @@ class Level2:
         unlocked_door_sprite = self.door_spritesheet.subsurface(pygame.Rect(0, 159, 32, 44))
         unlocked_door_sprite = pygame.transform.scale(unlocked_door_sprite, (50, 100))
         self.unlocked_door_sprite.append(unlocked_door_sprite)
+        self.layer_speed = 0.5
+        self.background_positions = [0, 0, 0, 0, 0]
+
 
 
     def draw_background_once(self):
@@ -62,7 +70,24 @@ class Level2:
         self.background_surface.fill((150, 150, 150), special_flags=pygame.BLEND_RGB_MULT)
 
     def draw_background(self):
+        # Only move the first layer
+        self.background_positions[4] -= self.layer_speed
+        if self.background_positions[4] <= -WIDTH:
+            self.background_positions[4] += WIDTH
+
+        x_pos = self.background_positions[4]
+
+        # Blit all layers, but only move the first one
+        for i, sprite in enumerate(self.background_sprites):
+            if i == 4:
+                if -WIDTH < x_pos < WIDTH:
+                    self.background_surface.blit(sprite, (x_pos, 0))
+                    self.background_surface.blit(sprite, (x_pos + WIDTH, 0))
+            else:
+                self.background_surface.blit(sprite, (0, 0))
+
         screen.blit(self.background_surface, (0, 0))
+
 
     class Enemy:
         def __init__(self, x, y, speed, idle_spritesheet, motion_spritesheet, death_spritesheet, attack_spritesheet, player, current_world):

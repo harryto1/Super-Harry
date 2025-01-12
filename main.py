@@ -18,82 +18,97 @@ print(f'Imported all modules in {time.time() - initial_time} seconds')
 
 class Player:
     def __init__(self):
+        # Basic attributes
         self.block_beneath = None
         self.x = 100
         self.y = HEIGHT // 2 + 200
         self.inventory = []
-        self.width = 35  # Rect width
-        self.height = 40  # Rect height
-        self.sprite_width = 200  # Sprite width
-        self.sprite_height = 200  # Sprite height
+        self.width = 35
+        self.height = 40
+        self.sprite_width = 200
+        self.sprite_height = 200
         self.color = (255, 0, 0)
         self.health = 5
         self.speed = 5
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+        # State flags
         self.moving = False
         self.facing_left = False
         self.jumping = False
         self.attacking = False
-        self.jump_velocity = 0
-        self.gravity_force = 1
-        self.idle_spritesheet = pygame.image.load('assets/characters/player/Soldier-Idle.png')
-        self.idle_sprites = []
-        for i in range(6):
-            sprite = self.idle_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-            self.idle_sprites.append(sprite)
-        self.walk_spritesheet = pygame.image.load('assets/characters/player/Soldier-Walk.png')
-        self.walk_sprites = []
-        for i in range(8):
-            sprite = self.walk_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-            self.walk_sprites.append(sprite)
-        self.hurt_spritesheet = pygame.image.load('assets/characters/player/Soldier-Hurt.png')
-        self.hurt_sprites = []
-        for i in range(4):
-            sprite = self.hurt_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-            self.hurt_sprites.append(sprite)
-        self.death_spritesheet = pygame.image.load('assets/characters/player/Soldier-Death.png')
-        self.death_sprites = []
-        for i in range(4):
-            sprite = self.death_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-            self.death_sprites.append(sprite)
-        self.attack_spritesheet = pygame.image.load('assets/characters/player/Soldier-Attack01.png')
-        self.attack_sprites = []
-        for i in range(6):
-            sprite = self.attack_spritesheet.subsurface(pygame.Rect(i * 100, 0, 100, 100))
-            self.attack_sprites.append(sprite)
-        self.idle_frame = 0
-        self.walk_frame = 0
-        self.last_update = pygame.time.get_ticks()
-        self.frame_rate = 100  # milliseconds per frame
-        self.heart = pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png')
         self.immune = False
 
+        # Physics attributes
+        self.jump_velocity = 0
+        self.gravity_force = 1
+
+        # Load and convert all spritesheets once
+        self._load_sprites()
+
+        # Animation timing
+        self.idle_frame = 0
+        self.walk_frame = 0
         self.attack_frame = 0
+        self.last_update = pygame.time.get_ticks()
         self.attack_last_update = pygame.time.get_ticks()
+        self.frame_rate = 100
         self.attack_frame_rate = 50
+
+        # Cache the heart UI
+        self.heart = pygame.image.load('assets/characters/ui/heart_scaled_to_256x256.png').convert_alpha()
+        self.heart_scaled = pygame.transform.scale(self.heart, (30, 30))
+
+    def _load_sprites(self):
+        # Helper function to load and process sprite sheets
+        def load_sheet(path, frames, size=100):
+            sheet = pygame.image.load(path).convert_alpha()
+            sprites = []
+            for i in range(frames):
+                sprite = sheet.subsurface(pygame.Rect(i * size, 0, size, size))
+                sprite = pygame.transform.scale(sprite, (self.sprite_width, self.sprite_height))
+                sprites.append(sprite)
+            return sprites
+
+        # Load all sprite animations
+        self.idle_sprites = load_sheet('assets/characters/player/Soldier-Idle.png', 6)
+        self.walk_sprites = load_sheet('assets/characters/player/Soldier-Walk.png', 8)
+        self.hurt_sprites = load_sheet('assets/characters/player/Soldier-Hurt.png', 4)
+        self.death_sprites = load_sheet('assets/characters/player/Soldier-Death.png', 4)
+        self.attack_sprites = load_sheet('assets/characters/player/Soldier-Attack01.png', 6)
+
+        # Pre-flip all sprites for left-facing animations
+        self.idle_sprites_left = [pygame.transform.flip(sprite, True, False) for sprite in self.idle_sprites]
+        self.walk_sprites_left = [pygame.transform.flip(sprite, True, False) for sprite in self.walk_sprites]
+        self.hurt_sprites_left = [pygame.transform.flip(sprite, True, False) for sprite in self.hurt_sprites]
+        self.death_sprites_left = [pygame.transform.flip(sprite, True, False) for sprite in self.death_sprites]
+        self.attack_sprites_left = [pygame.transform.flip(sprite, True, False) for sprite in self.attack_sprites]
+
+    def _draw_animation(self, sprites, frame_index, x_offset=0, y_offset=45):
+        sprite = sprites[frame_index]
+        screen.blit(sprite, (
+            self.x - (self.sprite_width - self.width) // 2 + x_offset,
+            self.y - (self.sprite_height - self.height) + self.height + y_offset
+        ))
 
     def draw_idle(self):
         now = pygame.time.get_ticks()
         if now - self.last_update > self.frame_rate:
             self.last_update = now
             self.idle_frame = (self.idle_frame + 1) % len(self.idle_sprites)
-        sprite = pygame.transform.scale(self.idle_sprites[self.idle_frame], (self.sprite_width, self.sprite_height))
-        if self.facing_left:
-            sprite = pygame.transform.flip(sprite, True, False)
-        screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2, self.y - (self.sprite_height - self.height) + self.height + 45))
+
+        sprites = self.idle_sprites_left if self.facing_left else self.idle_sprites
+        self._draw_animation(sprites, self.idle_frame)
         self.draw_hitbox()
 
     def draw_walk_animation(self):
-        if not self.walk_sprites:
-            return  # Avoid division by zero if walk_sprites is empty
         now = pygame.time.get_ticks()
         if now - self.last_update > self.frame_rate:
             self.last_update = now
             self.walk_frame = (self.walk_frame + 1) % len(self.walk_sprites)
-        sprite = pygame.transform.scale(self.walk_sprites[self.walk_frame], (self.sprite_width, self.sprite_height))
-        if self.facing_left:
-            sprite = pygame.transform.flip(sprite, True, False)
-        screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2, self.y - (self.sprite_height - self.height) + self.height + 45))
+
+        sprites = self.walk_sprites_left if self.facing_left else self.walk_sprites
+        self._draw_animation(sprites, self.walk_frame)
         self.draw_hitbox()
 
     def draw_hurt_animation(self):
@@ -122,24 +137,24 @@ class Player:
     def draw_attack_animation(self):
         if not self.attacking:
             return
+
         now = pygame.time.get_ticks()
         if now - self.attack_last_update > self.attack_frame_rate:
             self.attack_last_update = now
             self.attack_frame = (self.attack_frame + 1) % len(self.attack_sprites)
             if self.attack_frame == 0:
-                self.attacking = False  # Attack animation finished
+                self.attacking = False
 
-        # Check if Orc is within attack range during the entire attack animation
+        # Cache enemy positions and check only if in range
         for orc in current_world.enemies:
-            if abs(self.x - orc.x) < 45 and abs(self.y - orc.y) < 50 and orc.has_line_of_sight():
+            if (abs(self.x - orc.x) < 45 and
+                    abs(self.y - orc.y) < 50 and
+                    orc.has_line_of_sight()):
                 orc.orc_died = True
 
-        sprite = pygame.transform.scale(self.attack_sprites[self.attack_frame],
-                                        (self.sprite_width, self.sprite_height))
-        if self.facing_left:
-            sprite = pygame.transform.flip(sprite, True, False)
-        screen.blit(sprite, (self.x - (self.sprite_width - self.width) // 2,
-                             self.y - (self.sprite_height - self.height) + self.height + 45))
+        sprites = self.attack_sprites_left if self.facing_left else self.attack_sprites
+        self._draw_animation(sprites, self.attack_frame)
+
 
     def update_position(self, keys):
         global world, current_world
@@ -569,26 +584,37 @@ class Player:
 
 def main():
     global current_level, current_world, player, world, level, game_state
+
+    # Initialize game state and pygame
     game_state = load_game_state()
     print(f'Created player object in {time.time() - initial_time} seconds')
     pygame.init()
-    print(f'Initialized pygame in {time.time() - initial_time} seconds')
-    Clock = pygame.time.Clock()
-    screen = pygame.display.set_mode()
+    screen = pygame.display.set_mode((pygame.display.Info().current_w, pygame.display.Info().current_h),
+                                     pygame.DOUBLEBUF)
+
+    # Create persistent objects
+    clock = pygame.time.Clock()
+    fps_font = pygame.font.Font(None, 36)  # Create font once
+
     def display_fps():
-        fps = str(int(Clock.get_fps()))
-        font = pygame.font.Font(None, 36)
-        fps_text = font.render(fps, 1, pygame.Color('coral'))
+        fps = str(int(clock.get_fps()))
+        fps_text = fps_font.render(fps, 1, pygame.Color('coral'))
         screen.blit(fps_text, (WIDTH - 50, 10))
+
+    # Menu setup
     pygame.display.set_caption("Game Menu")
-    menu_items = ['Start','Levels', 'Quit']
+    menu_items = ['Start', 'Levels', 'Quit']
     menu = Menu(GRAY, menu_items)
     selected = menu.run()
-    a_or_d = False # Check if the player pressed A or D
-    space_instructions_done = False # Check if the player pressed SPACE
-    sword_instructions_done = False # Check if the player pressed F
+
+    # Initialize game state variables
+    a_or_d = False
+    space_instructions_done = False
+    sword_instructions_done = False
     world = 2
     level = 0
+
+    # Handle menu selection
     if selected == 2:
         sys.exit()
     elif selected == 1:
@@ -616,40 +642,14 @@ def main():
         current_world = current_level.worlds[world]
         player = Player()
         level1.level1_start()
+
     print('Starting game...')
     screen.fill(BLACK)
-    current_level.draw_background_once()  # Remember to change this when changing to another level
+    current_level.draw_background_once()
+
     running = True
     while running:
-        current_level.draw_background()
-        display_fps()
-        if level == 0 and not a_or_d:
-            if level1.start_instructions(player):
-                a_or_d = True
-        if level == 0 and not space_instructions_done and a_or_d:
-            if level1.space_instructions(player):
-                space_instructions_done = True
-        if level == 1 and not sword_instructions_done:
-            keys = pygame.key.get_pressed()
-            if level2.sword_instructions(player, keys):
-                sword_instructions_done = True
-        player.check_for_new_world()
-        player.gravity()
-        player.check_if_on_block()
-        keys = pygame.key.get_pressed()
-        player.update_position(keys)
-        current_world.draw()
-        player.draw_UI()
-        player.interactions()
-        player.events()
-        player.check_dead()
-        player.check_0_health()
-        if player.attacking:
-            player.draw_attack_animation()
-        elif player.moving:
-            player.draw_walk_animation()
-        else:
-            player.draw_idle()
+        # Handle events first
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -679,8 +679,49 @@ def main():
                             player.jumping = False
                             player.jump_velocity = 0
                         current_level.draw_background_once()
-        pygame.display.update()
-        Clock.tick(60)  # Set the frame rate to 60 FPS
+
+        # Get keyboard state once
+        keys = pygame.key.get_pressed()
+
+        # Background and world updates
+        current_level.draw_background()
+        current_world.draw()
+
+        # Tutorial checks
+        if level == 0:
+            if not a_or_d and level1.start_instructions(player):
+                a_or_d = True
+            elif a_or_d and not space_instructions_done and level1.space_instructions(player):
+                space_instructions_done = True
+        elif level == 1 and not sword_instructions_done:
+            if level2.sword_instructions(player, keys):
+                sword_instructions_done = True
+
+        # Player physics updates
+        player.check_for_new_world()
+        player.gravity()
+        player.check_if_on_block()
+        player.update_position(keys)
+
+        # Player state updates
+        player.interactions()
+        player.events()
+        player.check_dead()
+        player.check_0_health()
+
+        # UI and animations
+        player.draw_UI()
+        if player.attacking:
+            player.draw_attack_animation()
+        elif player.moving:
+            player.draw_walk_animation()
+        else:
+            player.draw_idle()
+
+        # FPS display and screen update
+        display_fps()
+        pygame.display.flip()  # Using flip() instead of update() for full screen updates
+        clock.tick(60)
 
 if __name__ == '__main__':
     main()
