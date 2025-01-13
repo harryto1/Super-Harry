@@ -6,6 +6,14 @@ from constants.constants import *
 from worlds.objects.door_key import DoorKey
 
 
+def get_relative_x(percentage_x):
+    x = int((percentage_x / 100) * WIDTH)
+    return x
+
+
+def get_relative_y(percentage_y):
+    y = int((percentage_y / 100) * HEIGHT)
+    return y
 
 class Level1:
     block_sprites = []
@@ -340,7 +348,7 @@ class Level1:
             self.right_spikes = [
                 pygame.Rect(WIDTH - 270, HEIGHT - 450, 50, 50),
                 pygame.Rect(WIDTH - 270, HEIGHT - 500, 50, 50),
-                pygame.Rect(WIDTH - 270, HEIGHT // 2 - 200, 50, 50)
+                pygame.Rect(WIDTH - 270, get_relative_y(33.5), 50, 50)
             ]
 
             self.moving_spikes = [
