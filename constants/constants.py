@@ -1,6 +1,8 @@
 import pygame
 
-screen = pygame.display.set_mode()
+pygame.init()
+screen = pygame.display.set_mode((pygame.display.Info().current_w, pygame.display.Info().current_h),
+                                 pygame.DOUBLEBUF)
 HEIGHT = screen.get_height()
 WIDTH = screen.get_width()
 bg_color = (0, 0, 0)

@@ -588,9 +588,6 @@ def main():
     # Initialize game state and pygame
     game_state = load_game_state()
     print(f'Created player object in {time.time() - initial_time} seconds')
-    pygame.init()
-    screen = pygame.display.set_mode((pygame.display.Info().current_w, pygame.display.Info().current_h),
-                                     pygame.DOUBLEBUF)
 
     # Create persistent objects
     clock = pygame.time.Clock()
