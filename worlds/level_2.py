@@ -478,7 +478,7 @@ class Level2:
             self.orc_dn_exist = False
 
         def draw_hitbox(self):
-            pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
+            pass
 
         def draw_idle(self):
             now = pygame.time.get_ticks()
@@ -560,10 +560,10 @@ class Level2:
                 return random.randint(self.initial_x - 100, self.initial_x)
 
         def _draw_behavior_zone(self):
-            pygame.draw.rect(screen, (0, 0, 255), self.behavior_zone, 2)
+            pass
 
         def _draw_attack_zone(self):
-            pygame.draw.rect(screen, (128, 0, 128), self.attack_zone, 2)
+            pass
 
         def behavior(self):
             if abs(self.x - self.player.x) < 250 and abs(self.y - self.player.y) < 50 and self.has_line_of_sight():
@@ -798,7 +798,6 @@ class Level2:
 
             for heart in self.bonus_hearts:
                 if heart[1]:
-                    pygame.draw.rect(screen, (255, 0, 0), heart[0], 2)
                     screen.blit(Level2.bonus_hearts_sprite, (
                     heart[0].x + (heart[0].width - Level2.bonus_hearts_sprite.get_width()) // 2,
                     heart[0].y + (heart[0].height - Level2.bonus_hearts_sprite.get_height()) // 2))

@@ -435,7 +435,7 @@ class Player:
 
 
     def draw_hitbox(self):
-        pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)
+        pass
 
     def _draw_hearts(self):
         hearts_rects = [
@@ -593,11 +593,6 @@ def main():
     clock = pygame.time.Clock()
     fps_font = pygame.font.Font(None, 36)  # Create font once
 
-    def display_fps():
-        fps = str(int(clock.get_fps()))
-        fps_text = fps_font.render(fps, 1, pygame.Color('coral'))
-        screen.blit(fps_text, (WIDTH - 50, 10))
-
     # Menu setup
     pygame.display.set_caption("Game Menu")
     menu_items = ['Start', 'Levels', 'Quit']
@@ -608,7 +603,7 @@ def main():
     a_or_d = False
     space_instructions_done = False
     sword_instructions_done = False
-    world = 2
+    world = 0
     level = 0
 
     # Handle menu selection
@@ -716,7 +711,6 @@ def main():
             player.draw_idle()
 
         # FPS display and screen update
-        display_fps()
         pygame.display.flip()  # Using flip() instead of update() for full screen updates
         clock.tick(60)
 

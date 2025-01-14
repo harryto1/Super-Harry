@@ -109,16 +109,12 @@ class Level1:
             for block in self.blocks:
                 if isinstance(block, list):
                     for b in block:
-                        pygame.draw.rect(screen, (0, 255, 0), b)
                         screen.blit(self.blocks_sprites[0], (b.x, b.y))
                 else:
-                    pygame.draw.rect(screen, (0, 255, 0), block)
                     screen.blit(self.blocks_sprites[0], (block.x, block.y))
             for spike in self.spikes:
-                pygame.draw.rect(screen, (255, 0, 0), spike, 2)
                 screen.blit(self.spikes_sprites[0], (spike.x, spike.y))
             for moving_block in self.moving_blocks:
-                pygame.draw.rect(screen, (0, 0, 255), moving_block[0])
                 screen.blit(self.blocks_sprites[0], (moving_block[0].x, moving_block[0].y))
                 if moving_block[1] == 'right':
                     moving_block[0].x += 3 # Move the block to the right
@@ -136,12 +132,10 @@ class Level1:
                             self.moving_spike_activated = False
                             self.inverted_spikes = []
                     if self.moving_spike_activated:
-                        pygame.draw.rect(screen, (255, 0, 0), inverted_spike, 2)
                         screen.blit(self.spikes_sprites[2], (inverted_spike.x, inverted_spike.y))
 
 
         def draw_special_spike(self, n):
-            pygame.draw.rect(screen, (255, 0, 0), self.special_spikes[n], 2)
             screen.blit(self.spikes_sprites[0], (self.special_spikes[n].x, self.special_spikes[n].y))
 
         def regen(self):
@@ -186,7 +180,6 @@ class Level1:
 
         def draw(self):
             for block in self.moving_blocks:
-                pygame.draw.rect(screen, (0, 0, 255), block[0])
                 screen.blit(Level1.block_sprites[0], (block[0].x, block[0].y))
                 if block[1] == 'down':
                     block[0].y += 3
@@ -199,7 +192,6 @@ class Level1:
 
             for heart in self.bonus_hearts:
                 if heart[1]:
-                    pygame.draw.rect(screen, (255, 0, 0), heart[0], 2)
                     screen.blit(Level1.bonus_hearts_sprite, (
                     heart[0].x + (heart[0].width - Level1.bonus_hearts_sprite.get_width()) // 2,
                     heart[0].y + (heart[0].height - Level1.bonus_hearts_sprite.get_height()) // 2))
@@ -223,14 +215,11 @@ class Level1:
             for block in self.blocks:
                 if isinstance(block, list):
                     for b in block:
-                        pygame.draw.rect(screen, (0, 255, 0), b)
                         screen.blit(Level1.block_sprites[0], (b.x, b.y))
                 else:
-                    pygame.draw.rect(screen, (0, 255, 0), block)
                     screen.blit(Level1.block_sprites[0], (block.x, block.y))
 
             for block in self.visible_blocks:
-                pygame.draw.rect(screen, (0, 255, 0), block)
                 screen.blit(Level1.block_sprites[0], (block.x, block.y))
 
 
@@ -248,7 +237,6 @@ class Level1:
                 if any(fireball.colliderect(other) for other in self.fireballs if other != fireball):
                     fireball.x = random.randint(300, WIDTH - 350)
                 screen.blit(sprite, sprite_rect.topleft)
-                pygame.draw.rect(screen, (255, 0, 0), fireball, 2)
 
         def shake_block(self, block):
             if pygame.time.get_ticks() % 100 < 50:
@@ -375,7 +363,6 @@ class Level1:
         def draw(self):
             for moving_spike in self.moving_spikes:
                 if moving_spike[0].y < 150:
-                    pygame.draw.rect(screen, (255, 0, 0), moving_spike[0], 2)
                     screen.blit(Level1.spikes_sprites[0], (moving_spike[0].x, moving_spike[0].y))
                 if moving_spike[1] == 'down':
                     moving_spike[0].y += 1
@@ -388,7 +375,6 @@ class Level1:
 
             for inverted_moving_spike in self.inverted_moving_spikes:
                 if inverted_moving_spike[0].y > -50:
-                    pygame.draw.rect(screen, (255, 0, 0), inverted_moving_spike[0], 2)
                     screen.blit(Level1.spikes_sprites[2], (inverted_moving_spike[0].x, inverted_moving_spike[0].y))
                 if inverted_moving_spike[1] == 'up':
                     inverted_moving_spike[0].y -= 1
@@ -413,18 +399,14 @@ class Level1:
             for block in self.blocks:
                 if isinstance(block, list):
                     for b in block:
-                        pygame.draw.rect(screen, (0, 255, 0), b)
                         screen.blit(Level1.block_sprites[0], (b.x, b.y))
                 else:
-                    pygame.draw.rect(screen, (0, 255, 0), block)
                     screen.blit(Level1.block_sprites[0], (block.x, block.y))
 
             for door in self.doors:
                 if door[1] == 'unlocked':
-                    pygame.draw.rect(screen, (255, 0, 0), door[0], 2)
                     screen.blit(Level1.unlocked_door_sprite[0], (door[0].x, door[0].y))
                 else:
-                    pygame.draw.rect(screen, (255, 0, 0), door[0], 2)
                     screen.blit(Level1.door_sprite[0], (door[0].x, door[0].y))
 
             for obj in self.objects:
@@ -435,49 +417,39 @@ class Level1:
                 if isinstance(inverted_spike, list):
                     for inv_spike in inverted_spike:
                         if isinstance(inv_spike, pygame.Rect): # Check if it is a rect
-                            pygame.draw.rect(screen, (255, 0, 0), inv_spike, 2)
                             screen.blit(Level1.spikes_sprites[2], (inv_spike.x, inv_spike.y))
                 else:
-                    pygame.draw.rect(screen, (255, 0, 0), inverted_spike, 2)
                     screen.blit(Level1.spikes_sprites[2], (inverted_spike.x, inverted_spike.y))
 
             for spike in self.spikes:
                 if isinstance(spike, list):
                     for s in spike:
-                        pygame.draw.rect(screen, (255, 0, 0), s, 2)
                         screen.blit(Level1.spikes_sprites[0], (s.x, s.y))
                 else:
-                    pygame.draw.rect(screen, (255, 0, 0), spike, 2)
                     screen.blit(Level1.spikes_sprites[0], (spike.x, spike.y))
 
             for left_spike in self.left_spikes:
                 if isinstance(left_spike, list):
                     for s in left_spike:
-                        pygame.draw.rect(screen, (255, 0, 0), s, 2)
                         screen.blit(Level1.spikes_sprites[1], (s.x, s.y))
                 else:
-                    pygame.draw.rect(screen, (255, 0, 0), left_spike, 2)
                     screen.blit(Level1.spikes_sprites[1], (left_spike.x, left_spike.y))
 
             for right_spike in self.right_spikes:
                 if isinstance(right_spike, list):
                     for s in right_spike:
-                        pygame.draw.rect(screen, (255, 0, 0), s, 2)
                         screen.blit(Level1.spikes_sprites[3], (s.x, s.y))
                 else:
-                    pygame.draw.rect(screen, (255, 0, 0), right_spike, 2)
                     screen.blit(Level1.spikes_sprites[3], (right_spike.x, right_spike.y))
 
             for heart in self.bonus_hearts:
                 if heart[1]:
-                    pygame.draw.rect(screen, (255, 0, 0), heart[0], 2)
                     screen.blit(Level1.bonus_hearts_sprite, (
                     heart[0].x + (heart[0].width - Level1.bonus_hearts_sprite.get_width()) // 2,
                     heart[0].y + (heart[0].height - Level1.bonus_hearts_sprite.get_height()) // 2))
 
 
             for i in range(len(self.moving_blocks)):
-                pygame.draw.rect(screen, (0, 0, 255), self.moving_blocks[i][0])
                 screen.blit(Level1.block_sprites[0], (self.moving_blocks[i][0].x, self.moving_blocks[i][0].y))
                 match i:
                     case 0 | 1 | 2:
